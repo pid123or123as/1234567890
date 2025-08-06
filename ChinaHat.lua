@@ -686,7 +686,7 @@ function ChinaHat.Init(UI, Core, notify)
             end,
         }, 'NimbYOffset')
 
-        local configSection = UI.Tabs.Visuals:Section({ Name = "ChinaHat Sync", Side = "Right" })
+        local configSection = UI.Tabs.Config:Section({ Name = "Circle,ChinaHat,Nimb Sync", Side = "Right" })
         configSection:Header({ Name = "ChinaHat Settings Sync" })
         configSection:Button({
             Name = "Sync Config",
@@ -739,3 +739,4 @@ function ChinaHat.Init(UI, Core, notify)
 end
 
 return ChinaHat
+
