@@ -20,8 +20,8 @@ function TargetESP.Init(UI, Core, notify)
             TargetESPColor = { Value = Color3.fromRGB(0, 0, 255), Default = Color3.fromRGB(0, 0, 255) },
             TargetESPYOffset = { Value = 0, Default = 0 },
             AnimateCircle = { Value = "None", Default = "None", Options = {"None", "Orbit", "Jello", "OrbitSwirl"} },
-            AnimationSpeed = { Value = 2, Default = 2 }, -- Новая настройка скорости анимации
-            OrbitTilt = { Value = 0.7, Default = 0.7 } -- Новая настройка наклона для Orbit и OrbitSwirl
+            AnimationSpeed = { Value = 2, Default = 2 },
+            OrbitTilt = { Value = 0.7, Default = 0.7 }
         }
     }
 
@@ -29,6 +29,8 @@ function TargetESP.Init(UI, Core, notify)
     local targetESPBlurQuads = {}
     local targetESPOppositeQuads = {}
     local lastTarget = nil
+    local uiElements = {} -- Store UI elements for synchronization
+    local connection
 
     local function destroyParts(parts)
         for _, part in ipairs(parts) do
@@ -103,7 +105,7 @@ function TargetESP.Init(UI, Core, notify)
                 blurQuad.Transparency = 0.3
                 table.insert(targetESPBlurQuads, blurQuad)
             end
-        end -- Jello и None не создают Blur-круги
+        end
     end
 
     local function updateTargetESP()
@@ -116,9 +118,15 @@ function TargetESP.Init(UI, Core, notify)
 
         local rootPart = getTargetRootPart()
         if not rootPart then
-            destroyParts(targetESPQuads)
-            destroyParts(targetESPBlurQuads)
-            destroyParts(targetESPOppositeQuads)
+            for _, quad in ipairs(targetESPQuads) do
+                quad.Visible = false
+            end
+            for _, blurQuad in ipairs(targetESPBlurQuads) do
+                blurQuad.Visible = false
+            end
+            for _, oppositeQuad in ipairs(targetESPOppositeQuads) do
+                oppositeQuad.Visible = false
+            end
             lastTarget = nil
             return
         end
@@ -140,7 +148,7 @@ function TargetESP.Init(UI, Core, notify)
         local t = tick()
         local yOffset
         if State.TargetESP.AnimateCircle.Value == "Jello" then
-            yOffset = math.sin(t * State.TargetESP.AnimationSpeed.Value) * 2.75 - 0.25 -- От -3 до 2.5
+            yOffset = math.sin(t * State.TargetESP.AnimationSpeed.Value) * 2.75 - 0.25
         elseif State.TargetESP.AnimateCircle.Value == "Orbit" then
             yOffset = math.sin(t * State.TargetESP.AnimationSpeed.Value) * 0.5
         else
@@ -304,20 +312,28 @@ function TargetESP.Init(UI, Core, notify)
         end
     end
 
-    local connection
     connection = RunService.RenderStepped:Connect(function()
         if localCharacter and State.TargetESP.TargetESPActive.Value then
             updateTargetESP()
         else
-            destroyParts(targetESPQuads)
-            destroyParts(targetESPBlurQuads)
-            destroyParts(targetESPOppositeQuads)
+            for _, quad in ipairs(targetESPQuads) do
+                quad.Visible = false
+            end
+            for _, blurQuad in ipairs(targetESPBlurQuads) do
+                blurQuad.Visible = false
+            end
+            for _, oppositeQuad in ipairs(targetESPOppositeQuads) do
+                oppositeQuad.Visible = false
+            end
             lastTarget = nil
         end
     end)
 
     LocalPlayer.CharacterAdded:Connect(function(character)
         localCharacter = character
+        if State.TargetESP.TargetESPActive.Value then
+            createTargetESP()
+        end
     end)
 
     if UI.Tabs and UI.Tabs.Visuals then
@@ -325,7 +341,7 @@ function TargetESP.Init(UI, Core, notify)
         UI.Sections.TargetESP = targetESPSection
         targetESPSection:Header({ Name = "Target ESP" })
         targetESPSection:SubLabel({ Text = "Displays a circle above the target player" })
-        targetESPSection:Toggle({
+        uiElements.TargetESPEnabled = targetESPSection:Toggle({
             Name = "Enabled",
             Default = State.TargetESP.TargetESPActive.Default,
             Callback = function(value)
@@ -334,7 +350,7 @@ function TargetESP.Init(UI, Core, notify)
             'TargetESPEnabled'
         })
         targetESPSection:Divider()
-        targetESPSection:Dropdown({
+        uiElements.TargetESPMethod = targetESPSection:Dropdown({
             Name = "Method",
             Default = State.TargetESP.TargetESPMethod.Default,
             Options = State.TargetESP.TargetESPMethod.Options,
@@ -348,7 +364,7 @@ function TargetESP.Init(UI, Core, notify)
             end,
             'TargetESPMethod'
         })
-        targetESPSection:Slider({
+        uiElements.TargetESPRadius = targetESPSection:Slider({
             Name = "Radius",
             Minimum = 0.5,
             Maximum = 4.0,
@@ -363,7 +379,7 @@ function TargetESP.Init(UI, Core, notify)
             end,
             'TargetESPRadius'
         })
-        targetESPSection:Slider({
+        uiElements.TargetESPParts = targetESPSection:Slider({
             Name = "Parts",
             Minimum = 20,
             Maximum = 100,
@@ -379,7 +395,7 @@ function TargetESP.Init(UI, Core, notify)
             'TargetESPParts'
         })
         targetESPSection:Divider()
-        targetESPSection:Slider({
+        uiElements.TargetESPGradientSpeed = targetESPSection:Slider({
             Name = "Gradient Speed",
             Minimum = 1,
             Maximum = 10,
@@ -391,7 +407,7 @@ function TargetESP.Init(UI, Core, notify)
             end,
             'TargetESPGradientSpeed'
         })
-        targetESPSection:Toggle({
+        uiElements.TargetESPGradient = targetESPSection:Toggle({
             Name = "Gradient",
             Default = State.TargetESP.TargetESPGradient.Default,
             Callback = function(value)
@@ -403,9 +419,9 @@ function TargetESP.Init(UI, Core, notify)
             end,
             'TargetESPGradient'
         })
-        targetESPSection:Colorpicker({
+        uiElements.TargetESPColor = targetESPSection:Colorpicker({
             Name = "Color",
-            Default = State.TargetESP.TargetESPColor.Default,
+            Default = Mission
             Callback = function(value)
                 State.TargetESP.TargetESPColor.Value = value
                 if State.TargetESP.TargetESPActive.Value and not State.TargetESP.TargetESPGradient.Value then
@@ -416,7 +432,7 @@ function TargetESP.Init(UI, Core, notify)
             'TargetESPColor'
         })
         targetESPSection:Divider()
-        targetESPSection:Slider({
+        uiElements.TargetESPYOffset = targetESPSection:Slider({
             Name = "Y Offset",
             Minimum = -5,
             Maximum = 5,
@@ -434,7 +450,7 @@ function TargetESP.Init(UI, Core, notify)
             'TargetESPYOffset'
         })
         targetESPSection:Divider()
-        targetESPSection:Dropdown({
+        uiElements.AnimateCircle = targetESPSection:Dropdown({
             Name = "Animate Circle",
             Default = State.TargetESP.AnimateCircle.Default,
             Options = State.TargetESP.AnimateCircle.Options,
@@ -447,7 +463,7 @@ function TargetESP.Init(UI, Core, notify)
             end,
             'AnimateCircle'
         })
-        targetESPSection:Slider({
+        uiElements.AnimationSpeed = targetESPSection:Slider({
             Name = "Animation Speed",
             Minimum = 1,
             Maximum = 10,
@@ -459,10 +475,10 @@ function TargetESP.Init(UI, Core, notify)
             end,
             'AnimationSpeed'
         })
-        targetESPSection:Slider({
+        uiElements.OrbitTilt = targetESPSection:Slider({
             Name = "Orbit Tilt",
             Minimum = 0.1,
-            Maximum = 2,
+            Maximum = 3,
             Default = State.TargetESP.OrbitTilt.Default,
             Precision = 2,
             Callback = function(value)
@@ -473,6 +489,25 @@ function TargetESP.Init(UI, Core, notify)
                 notify("TargetESP", "Orbit Tilt set to: " .. value, false)
             end,
             'OrbitTilt'
+        })
+
+        local configSection = UI.Tabs.Config:Section({ Name = "TargetESP Sync", Side = "Right" })
+        configSection:Header({ Name = "TargetESP Settings Sync" })
+        configSection:Button({
+            Name = "Sync Config",
+            Callback = function()
+                -- Synchronize TargetESP sliders
+                State.TargetESP.TargetESPRadius.Value = uiElements.TargetESPRadius:GetValue()
+                State.TargetESP.TargetESPParts.Value = uiElements.TargetESPParts:GetValue()
+                State.TargetESP.TargetESPGradientSpeed.Value = uiElements.TargetESPGradientSpeed:GetValue()
+                State.TargetESP.TargetESPYOffset.Value = uiElements.TargetESPYOffset:GetValue()
+                State.TargetESP.AnimationSpeed.Value = uiElements.AnimationSpeed:GetValue()
+                State.TargetESP.OrbitTilt.Value = uiElements.OrbitTilt:GetValue()
+                if State.TargetESP.TargetESPActive.Value then
+                    createTargetESP()
+                end
+                notify("TargetESP", "Config synchronized!", true)
+            end
         })
     end
 
