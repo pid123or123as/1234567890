@@ -371,8 +371,7 @@ function TargetESP.Init(UI, Core, notify)
                 end
                 notify("TargetESP", "Method set to: " .. value, false)
             end,
-            'TargetESPMethod'
-        })
+        }, 'TargetESPMethod')
         uiElements.TargetESPRadius = targetESPSection:Slider({
             Name = "Radius",
             Minimum = 0.5,
@@ -386,8 +385,7 @@ function TargetESP.Init(UI, Core, notify)
                 end
                 notify("TargetESP", "Target ESP Radius set to: " .. value, false)
             end,
-            'TargetESPRadius'
-        })
+        }, 'TargetESPRadius')
         uiElements.TargetESPParts = targetESPSection:Slider({
             Name = "Parts",
             Minimum = 20,
@@ -401,8 +399,7 @@ function TargetESP.Init(UI, Core, notify)
                 end
                 notify("TargetESP", "Target ESP Parts set to: " .. value, false)
             end,
-            'TargetESPParts'
-        })
+        }, 'TargetESPParts')
         targetESPSection:Divider()
         uiElements.TargetESPGradientSpeed = targetESPSection:Slider({
             Name = "Gradient Speed",
@@ -414,8 +411,7 @@ function TargetESP.Init(UI, Core, notify)
                 State.TargetESP.TargetESPGradientSpeed.Value = value
                 notify("TargetESP", "Target ESP Gradient Speed set to: " .. value, false)
             end,
-            'TargetESPGradientSpeed'
-        })
+        }, 'TargetESPGradientSpeed')
         uiElements.TargetESPGradient = targetESPSection:Toggle({
             Name = "Gradient",
             Default = State.TargetESP.TargetESPGradient.Default,
@@ -426,8 +422,7 @@ function TargetESP.Init(UI, Core, notify)
                 end
                 notify("TargetESP", "Target ESP Gradient: " .. (value and "Enabled" or "Disabled"), true)
             end,
-            'TargetESPGradient'
-        })
+        }, 'TargetESPGradient')
         uiElements.TargetESPColor = targetESPSection:Colorpicker({
             Name = "Color",
             Default = State.TargetESP.TargetESPColor.Default,
@@ -438,8 +433,7 @@ function TargetESP.Init(UI, Core, notify)
                 end
                 notify("TargetESP", "Target ESP Color updated", false)
             end,
-            'TargetESPColor'
-        })
+        }, 'TargetESPColor')
         targetESPSection:Divider()
         uiElements.TargetESPYOffset = targetESPSection:Slider({
             Name = "Y Offset",
@@ -456,8 +450,7 @@ function TargetESP.Init(UI, Core, notify)
                     notify("TargetESP", "Target ESP Y Offset set to: " .. value, false)
                 end
             end,
-            'TargetESPYOffset'
-        })
+        }, 'TargetESPYOffset')
         targetESPSection:Divider()
         uiElements.AnimateCircle = targetESPSection:Dropdown({
             Name = "Animate Circle",
@@ -470,8 +463,7 @@ function TargetESP.Init(UI, Core, notify)
                 end
                 notify("TargetESP", "Animate Circle set to: " .. value, false)
             end,
-            'AnimateCircle'
-        })
+        }, 'AnimateCircle')
         uiElements.AnimationSpeed = targetESPSection:Slider({
             Name = "Animation Speed",
             Minimum = 1,
@@ -482,12 +474,11 @@ function TargetESP.Init(UI, Core, notify)
                 State.TargetESP.AnimationSpeed.Value = value
                 notify("TargetESP", "Animation Speed set to: " .. value, false)
             end,
-            'AnimationSpeed'
-        })
+        }, 'AnimationSpeed')
         uiElements.OrbitTilt = targetESPSection:Slider({
             Name = "Orbit Tilt",
             Minimum = 0.1,
-            Maximum = 2,
+            Maximum = 4,
             Default = State.TargetESP.OrbitTilt.Default,
             Precision = 2,
             Callback = function(value)
@@ -497,10 +488,9 @@ function TargetESP.Init(UI, Core, notify)
                 end
                 notify("TargetESP", "Orbit Tilt set to: " .. value, false)
             end,
-            'OrbitTilt'
-        })
+        }, 'OrbitTilt')
 
-        local configSection = UI.Tabs.Config:Section({ Name = "TargetESP Sync", Side = "Right" })
+        local configSection = UI.Tabs.Visuals:Section({ Name = "TargetESP Sync", Side = "Right" })
         configSection:Header({ Name = "TargetESP Settings Sync" })
         configSection:Button({
             Name = "Sync Config",
