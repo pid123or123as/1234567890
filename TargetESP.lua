@@ -29,8 +29,7 @@ function TargetESP.Init(UI, Core, notify)
     local targetESPBlurQuads = {}
     local targetESPOppositeQuads = {}
     local lastTarget = nil
-    local uiElements = {} -- Store UI elements for synchronization
-    local connection
+    local uiElements = {} -- Для хранения ссылок на элементы UI (слайдеры)
 
     local function destroyParts(parts)
         for _, part in ipairs(parts) do
@@ -109,10 +108,16 @@ function TargetESP.Init(UI, Core, notify)
     end
 
     local function updateTargetESP()
-        if not State.TargetESP.TargetESPActive.Value then
-            destroyParts(targetESPQuads)
-            destroyParts(targetESPBlurQuads)
-            destroyParts(targetESPOppositeQuads)
+        if not State.TargetESP.TargetESPActive.Value or not localCharacter then
+            for _, quad in ipairs(targetESPQuads) do
+                quad.Visible = false
+            end
+            for _, blurQuad in ipairs(targetESPBlurQuads) do
+                blurQuad.Visible = false
+            end
+            for _, oppositeQuad in ipairs(targetESPOppositeQuads) do
+                oppositeQuad.Visible = false
+            end
             return
         end
 
@@ -312,6 +317,14 @@ function TargetESP.Init(UI, Core, notify)
         end
     end
 
+    local function connectCharacter(character)
+        localCharacter = character
+        if State.TargetESP.TargetESPActive.Value then
+            createTargetESP()
+        end
+    end
+
+    local connection
     connection = RunService.RenderStepped:Connect(function()
         if localCharacter and State.TargetESP.TargetESPActive.Value then
             updateTargetESP()
@@ -325,16 +338,13 @@ function TargetESP.Init(UI, Core, notify)
             for _, oppositeQuad in ipairs(targetESPOppositeQuads) do
                 oppositeQuad.Visible = false
             end
-            lastTarget = nil
         end
     end)
 
-    LocalPlayer.CharacterAdded:Connect(function(character)
-        localCharacter = character
-        if State.TargetESP.TargetESPActive.Value then
-            createTargetESP()
-        end
-    end)
+    LocalPlayer.CharacterAdded:Connect(connectCharacter)
+    if localCharacter then
+        connectCharacter(localCharacter)
+    end
 
     if UI.Tabs and UI.Tabs.Visuals then
         local targetESPSection = UI.Sections.TargetESP or UI.Tabs.Visuals:Section({ Name = "TargetESP", Side = "Right" })
@@ -346,7 +356,7 @@ function TargetESP.Init(UI, Core, notify)
             Default = State.TargetESP.TargetESPActive.Default,
             Callback = function(value)
                 toggleTargetESP(value)
-            end,
+            end
         }, 'TargetESPEnabled')
         targetESPSection:Divider()
         uiElements.TargetESPMethod = targetESPSection:Dropdown({
@@ -361,7 +371,8 @@ function TargetESP.Init(UI, Core, notify)
                 end
                 notify("TargetESP", "Method set to: " .. value, false)
             end,
-        }, 'TargetESPMethod')
+            'TargetESPMethod'
+        })
         uiElements.TargetESPRadius = targetESPSection:Slider({
             Name = "Radius",
             Minimum = 0.5,
@@ -375,7 +386,8 @@ function TargetESP.Init(UI, Core, notify)
                 end
                 notify("TargetESP", "Target ESP Radius set to: " .. value, false)
             end,
-        }, 'TargetESPRadius')
+            'TargetESPRadius'
+        })
         uiElements.TargetESPParts = targetESPSection:Slider({
             Name = "Parts",
             Minimum = 20,
@@ -389,7 +401,8 @@ function TargetESP.Init(UI, Core, notify)
                 end
                 notify("TargetESP", "Target ESP Parts set to: " .. value, false)
             end,
-        }, 'TargetESPParts')
+            'TargetESPParts'
+        })
         targetESPSection:Divider()
         uiElements.TargetESPGradientSpeed = targetESPSection:Slider({
             Name = "Gradient Speed",
@@ -401,7 +414,8 @@ function TargetESP.Init(UI, Core, notify)
                 State.TargetESP.TargetESPGradientSpeed.Value = value
                 notify("TargetESP", "Target ESP Gradient Speed set to: " .. value, false)
             end,
-        }, 'TargetESPGradientSpeed')
+            'TargetESPGradientSpeed'
+        })
         uiElements.TargetESPGradient = targetESPSection:Toggle({
             Name = "Gradient",
             Default = State.TargetESP.TargetESPGradient.Default,
@@ -412,10 +426,11 @@ function TargetESP.Init(UI, Core, notify)
                 end
                 notify("TargetESP", "Target ESP Gradient: " .. (value and "Enabled" or "Disabled"), true)
             end,
-        }, 'TargetESPGradient')
+            'TargetESPGradient'
+        })
         uiElements.TargetESPColor = targetESPSection:Colorpicker({
             Name = "Color",
-            Default = Mission
+            Default = State.TargetESP.TargetESPColor.Default,
             Callback = function(value)
                 State.TargetESP.TargetESPColor.Value = value
                 if State.TargetESP.TargetESPActive.Value and not State.TargetESP.TargetESPGradient.Value then
@@ -423,7 +438,8 @@ function TargetESP.Init(UI, Core, notify)
                 end
                 notify("TargetESP", "Target ESP Color updated", false)
             end,
-        }, 'TargetESPColor')
+            'TargetESPColor'
+        })
         targetESPSection:Divider()
         uiElements.TargetESPYOffset = targetESPSection:Slider({
             Name = "Y Offset",
@@ -440,7 +456,8 @@ function TargetESP.Init(UI, Core, notify)
                     notify("TargetESP", "Target ESP Y Offset set to: " .. value, false)
                 end
             end,
-        }, 'TargetESPYOffset')
+            'TargetESPYOffset'
+        })
         targetESPSection:Divider()
         uiElements.AnimateCircle = targetESPSection:Dropdown({
             Name = "Animate Circle",
@@ -453,7 +470,8 @@ function TargetESP.Init(UI, Core, notify)
                 end
                 notify("TargetESP", "Animate Circle set to: " .. value, false)
             end,
-        }, 'AnimateCircle')
+            'AnimateCircle'
+        })
         uiElements.AnimationSpeed = targetESPSection:Slider({
             Name = "Animation Speed",
             Minimum = 1,
@@ -464,11 +482,12 @@ function TargetESP.Init(UI, Core, notify)
                 State.TargetESP.AnimationSpeed.Value = value
                 notify("TargetESP", "Animation Speed set to: " .. value, false)
             end,
-        }, 'AnimationSpeed')
+            'AnimationSpeed'
+        })
         uiElements.OrbitTilt = targetESPSection:Slider({
             Name = "Orbit Tilt",
             Minimum = 0.1,
-            Maximum = 3,
+            Maximum = 2,
             Default = State.TargetESP.OrbitTilt.Default,
             Precision = 2,
             Callback = function(value)
@@ -478,18 +497,20 @@ function TargetESP.Init(UI, Core, notify)
                 end
                 notify("TargetESP", "Orbit Tilt set to: " .. value, false)
             end,
-        }, 'OrbitTilt')
+            'OrbitTilt'
+        })
 
         local configSection = UI.Tabs.Config:Section({ Name = "TargetESP Sync", Side = "Right" })
         configSection:Header({ Name = "TargetESP Settings Sync" })
         configSection:Button({
             Name = "Sync Config",
             Callback = function()
-                -- Synchronize TargetESP sliders
                 State.TargetESP.TargetESPRadius.Value = uiElements.TargetESPRadius:GetValue()
                 State.TargetESP.TargetESPParts.Value = uiElements.TargetESPParts:GetValue()
                 State.TargetESP.TargetESPGradientSpeed.Value = uiElements.TargetESPGradientSpeed:GetValue()
-                State.TargetESP.TargetESPYOffset.Value = uiElements.TargetESPYOffset:GetValue()
+                if State.TargetESP.AnimateCircle.Value == "None" then
+                    State.TargetESP.TargetESPYOffset.Value = uiElements.TargetESPYOffset:GetValue()
+                end
                 State.TargetESP.AnimationSpeed.Value = uiElements.AnimationSpeed:GetValue()
                 State.TargetESP.OrbitTilt.Value = uiElements.OrbitTilt:GetValue()
                 if State.TargetESP.TargetESPActive.Value then
@@ -513,4 +534,3 @@ function TargetESP.Init(UI, Core, notify)
 end
 
 return TargetESP
-
