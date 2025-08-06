@@ -490,7 +490,7 @@ function TargetESP.Init(UI, Core, notify)
             end,
         }, 'OrbitTilt')
 
-        local configSection = UI.Tabs.Visuals:Section({ Name = "TargetESP Sync", Side = "Right" })
+        local configSection = UI.Tabs.Config:Section({ Name = "TargetESP Sync", Side = "Right" })
         configSection:Header({ Name = "TargetESP Settings Sync" })
         configSection:Button({
             Name = "Sync Config",
@@ -524,3 +524,4 @@ function TargetESP.Init(UI, Core, notify)
 end
 
 return TargetESP
+
