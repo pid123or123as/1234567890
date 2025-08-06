@@ -49,6 +49,7 @@ function ChinaHat.Init(UI, Core, notify)
     local jumpAnimationActive = false
     local renderConnection
     local humanoidConnection
+    local uiElements = {} -- Для хранения ссылок на элементы UI (слайдеры)
 
     local function destroyParts(parts)
         for _, part in ipairs(parts) do
@@ -420,16 +421,15 @@ function ChinaHat.Init(UI, Core, notify)
         UI.Sections.ChinaHat = chinaHatSection
         chinaHatSection:Header({ Name = "China Hat" })
         chinaHatSection:SubLabel({ Text = "Displays a hat above the player head" })
-        chinaHatSection:Toggle({
+        uiElements.HatEnabled = chinaHatSection:Toggle({
             Name = "Enabled",
             Default = State.ChinaHat.HatActive.Default,
             Callback = function(value)
                 toggleHat(value)
             end,
-            'HatEnabled'
-        })
+        }, 'HatEnabled')
         chinaHatSection:Divider()
-        chinaHatSection:Slider({
+        uiElements.HatScale = chinaHatSection:Slider({
             Name = "Scale",
             Minimum = 0.5,
             Maximum = 2.0,
@@ -442,9 +442,8 @@ function ChinaHat.Init(UI, Core, notify)
                 end
                 notify("ChinaHat", "Hat Scale set to: " .. value, false)
             end,
-            'HatScale'
-        })
-        chinaHatSection:Slider({
+        }, 'HatScale')
+        uiElements.HatParts = chinaHatSection:Slider({
             Name = "Parts",
             Minimum = 20,
             Maximum = 150,
@@ -457,10 +456,9 @@ function ChinaHat.Init(UI, Core, notify)
                 end
                 notify("ChinaHat", "Hat Parts set to: " .. value, false)
             end,
-            'HatParts'
-        })
+        }, 'HatParts')
         chinaHatSection:Divider()
-        chinaHatSection:Slider({
+        uiElements.HatGradientSpeed = chinaHatSection:Slider({
             Name = "Gradient Speed",
             Minimum = 1,
             Maximum = 10,
@@ -470,9 +468,8 @@ function ChinaHat.Init(UI, Core, notify)
                 State.ChinaHat.HatGradientSpeed.Value = value
                 notify("ChinaHat", "Hat Gradient Speed set to: " .. value, false)
             end,
-            'HatGradientSpeed'
-        })
-        chinaHatSection:Toggle({
+        }, 'HatGradientSpeed')
+        uiElements.HatGradient = chinaHatSection:Toggle({
             Name = "Gradient",
             Default = State.ChinaHat.HatGradient.Default,
             Callback = function(value)
@@ -482,9 +479,8 @@ function ChinaHat.Init(UI, Core, notify)
                 end
                 notify("ChinaHat", "Hat Gradient: " .. (value and "Enabled" or "Disabled"), true)
             end,
-            'HatGradient'
-        })
-        chinaHatSection:Colorpicker({
+        }, 'HatGradient')
+        uiElements.HatColor = chinaHatSection:Colorpicker({
             Name = "Color",
             Default = State.ChinaHat.HatColor.Default,
             Callback = function(value)
@@ -494,10 +490,9 @@ function ChinaHat.Init(UI, Core, notify)
                 end
                 notify("ChinaHat", "Hat Color updated", false)
             end,
-            'HatColor'
-        })
+        }, 'HatColor')
         chinaHatSection:Divider()
-        chinaHatSection:Slider({
+        uiElements.HatYOffset = chinaHatSection:Slider({
             Name = "Y Offset",
             Minimum = -5,
             Maximum = 5,
@@ -507,9 +502,8 @@ function ChinaHat.Init(UI, Core, notify)
                 State.ChinaHat.HatYOffset.Value = value
                 notify("ChinaHat", "Hat Y Offset set to: " .. value, false)
             end,
-            'HatYOffset'
-        })
-        chinaHatSection:Toggle({
+        }, 'HatYOffset')
+        uiElements.OutlineCircle = chinaHatSection:Toggle({
             Name = "Outline Circle",
             Default = State.ChinaHat.OutlineCircle.Default,
             Callback = function(value)
@@ -519,23 +513,21 @@ function ChinaHat.Init(UI, Core, notify)
                 end
                 notify("ChinaHat", "Outline Circle: " .. (value and "Enabled" or "Disabled"), true)
             end,
-            'OutlineCircle'
-        })
+        }, 'OutlineCircle')
 
         local circleSection = UI.Sections.Circle or UI.Tabs.Visuals:Section({ Name = "Circle", Side = "Left" })
         UI.Sections.Circle = circleSection
         circleSection:Header({ Name = "Circle" })
         circleSection:SubLabel({ Text = "Displays a circle at the player feet" })
-        circleSection:Toggle({
+        uiElements.CircleEnabled = circleSection:Toggle({
             Name = "Enabled",
             Default = State.Circle.CircleActive.Default,
             Callback = function(value)
                 toggleCircle(value)
             end,
-            'CircleEnabled'
-        })
+        }, 'CircleEnabled')
         circleSection:Divider()
-        circleSection:Slider({
+        uiElements.CircleRadius = circleSection:Slider({
             Name = "Radius",
             Minimum = 1.0,
             Maximum = 3.0,
@@ -548,9 +540,8 @@ function ChinaHat.Init(UI, Core, notify)
                 end
                 notify("Circle", "Circle Radius set to: " .. value, false)
             end,
-            'CircleRadius'
-        })
-        circleSection:Slider({
+        }, 'CircleRadius')
+        uiElements.CircleParts = circleSection:Slider({
             Name = "Parts",
             Minimum = 20,
             Maximum = 100,
@@ -563,10 +554,9 @@ function ChinaHat.Init(UI, Core, notify)
                 end
                 notify("Circle", "Circle Parts set to: " .. value, false)
             end,
-            'CircleParts'
-        })
+        }, 'CircleParts')
         circleSection:Divider()
-        circleSection:Slider({
+        uiElements.CircleGradientSpeed = circleSection:Slider({
             Name = "Gradient Speed",
             Minimum = 1,
             Maximum = 10,
@@ -576,9 +566,8 @@ function ChinaHat.Init(UI, Core, notify)
                 State.Circle.CircleGradientSpeed.Value = value
                 notify("Circle", "Circle Gradient Speed set to: " .. value, false)
             end,
-            'CircleGradientSpeed'
-        })
-        circleSection:Toggle({
+        }, 'CircleGradientSpeed')
+        uiElements.CircleGradient = circleSection:Toggle({
             Name = "Gradient",
             Default = State.Circle.CircleGradient.Default,
             Callback = function(value)
@@ -588,9 +577,8 @@ function ChinaHat.Init(UI, Core, notify)
                 end
                 notify("Circle", "Circle Gradient: " .. (value and "Enabled" or "Disabled"), true)
             end,
-            'CircleGradient'
-        })
-        circleSection:Colorpicker({
+        }, 'CircleGradient')
+        uiElements.CircleColor = circleSection:Colorpicker({
             Name = "Color",
             Default = State.Circle.CircleColor.Default,
             Callback = function(value)
@@ -600,33 +588,30 @@ function ChinaHat.Init(UI, Core, notify)
                 end
                 notify("Circle", "Circle Color updated", false)
             end,
-            'CircleColor'
-        })
+        }, 'CircleColor')
         circleSection:Divider()
-        circleSection:Toggle({
+        uiElements.JumpAnimate = circleSection:Toggle({
             Name = "Jump Animate",
             Default = State.Circle.JumpAnimate.Default,
             Callback = function(value)
                 State.Circle.JumpAnimate.Value = value
                 notify("Circle", "Jump Animation: " .. (value and "Enabled" or "Disabled"), true)
             end,
-            'JumpAnimate'
-        })
+        }, 'JumpAnimate')
 
         local nimbSection = UI.Sections.Nimb or UI.Tabs.Visuals:Section({ Name = "Nimb", Side = "Right" })
         UI.Sections.Nimb = nimbSection
         nimbSection:Header({ Name = "Nimb" })
         nimbSection:SubLabel({ Text = "Displays a circle above the player head" })
-        nimbSection:Toggle({
+        uiElements.NimbEnabled = nimbSection:Toggle({
             Name = "Nimb Enabled",
             Default = State.Nimb.NimbActive.Default,
             Callback = function(value)
                 toggleNimb(value)
             end,
-            'NimbEnabled'
-        })
+        }, 'NimbEnabled')
         nimbSection:Divider()
-        nimbSection:Slider({
+        uiElements.NimbRadius = nimbSection:Slider({
             Name = "Radius",
             Minimum = 1.0,
             Maximum = 3.0,
@@ -639,9 +624,8 @@ function ChinaHat.Init(UI, Core, notify)
                 end
                 notify("Nimb", "Nimb Radius set to: " .. value, false)
             end,
-            'NimbRadius'
-        })
-        nimbSection:Slider({
+        }, 'NimbRadius')
+        uiElements.NimbParts = nimbSection:Slider({
             Name = "Parts",
             Minimum = 20,
             Maximum = 100,
@@ -654,10 +638,9 @@ function ChinaHat.Init(UI, Core, notify)
                 end
                 notify("Nimb", "Nimb Parts set to: " .. value, false)
             end,
-            'NimbParts'
-        })
+        }, 'NimbParts')
         nimbSection:Divider()
-        nimbSection:Slider({
+        uiElements.NimbGradientSpeed = nimbSection:Slider({
             Name = "Gradient Speed",
             Minimum = 1,
             Maximum = 10,
@@ -667,9 +650,8 @@ function ChinaHat.Init(UI, Core, notify)
                 State.Nimb.NimbGradientSpeed.Value = value
                 notify("Nimb", "Nimb Gradient Speed set to: " .. value, false)
             end,
-            'NimbGradientSpeed'
-        })
-        nimbSection:Toggle({
+        }, 'NimbGradientSpeed')
+        uiElements.NimbGradient = nimbSection:Toggle({
             Name = "Gradient",
             Default = State.Nimb.NimbGradient.Default,
             Callback = function(value)
@@ -679,9 +661,8 @@ function ChinaHat.Init(UI, Core, notify)
                 end
                 notify("Nimb", "Nimb Gradient: " .. (value and "Enabled" or "Disabled"), true)
             end,
-            'NimbGradient'
-        })
-        nimbSection:Colorpicker({
+        }, 'NimbGradient')
+        uiElements.NimbColor = nimbSection:Colorpicker({
             Name = "Color",
             Default = State.Nimb.NimbColor.Default,
             Callback = function(value)
@@ -691,10 +672,9 @@ function ChinaHat.Init(UI, Core, notify)
                 end
                 notify("Nimb", "Nimb Color updated", false)
             end,
-            'NimbColor'
-        })
+        }, 'NimbColor')
         nimbSection:Divider()
-        nimbSection:Slider({
+        uiElements.NimbYOffset = nimbSection:Slider({
             Name = "Y Offset",
             Minimum = 1,
             Maximum = 3,
@@ -704,7 +684,41 @@ function ChinaHat.Init(UI, Core, notify)
                 State.Nimb.NimbYOffset.Value = value
                 notify("Nimb", "Nimb Y Offset set to: " .. value, false)
             end,
-            'NimbYOffset'
+        }, 'NimbYOffset')
+
+        local configSection = UI.Tabs.Visuals:Section({ Name = "ChinaHat Sync", Side = "Right" })
+        configSection:Header({ Name = "ChinaHat Settings Sync" })
+        configSection:Button({
+            Name = "Sync Config",
+            Callback = function()
+                -- Синхронизация ChinaHat
+                State.ChinaHat.HatScale.Value = uiElements.HatScale:GetValue()
+                State.ChinaHat.HatParts.Value = uiElements.HatParts:GetValue()
+                State.ChinaHat.HatGradientSpeed.Value = uiElements.HatGradientSpeed:GetValue()
+                State.ChinaHat.HatYOffset.Value = uiElements.HatYOffset:GetValue()
+                if State.ChinaHat.HatActive.Value then
+                    createHat()
+                end
+
+                -- Синхронизация Circle
+                State.Circle.CircleRadius.Value = uiElements.CircleRadius:GetValue()
+                State.Circle.CircleParts.Value = uiElements.CircleParts:GetValue()
+                State.Circle.CircleGradientSpeed.Value = uiElements.CircleGradientSpeed:GetValue()
+                if State.Circle.CircleActive.Value then
+                    createCircle()
+                end
+
+                -- Синхронизация Nimb
+                State.Nimb.NimbRadius.Value = uiElements.NimbRadius:GetValue()
+                State.Nimb.NimbParts.Value = uiElements.NimbParts:GetValue()
+                State.Nimb.NimbGradientSpeed.Value = uiElements.NimbGradientSpeed:GetValue()
+                State.Nimb.NimbYOffset.Value = uiElements.NimbYOffset:GetValue()
+                if State.Nimb.NimbActive.Value then
+                    createNimb()
+                end
+
+                notify("ChinaHat", "Config synchronized!", true)
+            end
         })
     end
 
