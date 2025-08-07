@@ -1,5 +1,6 @@
 local KillAura = {}
-print('1')
+print('2')
+
 function KillAura.Init(UI, Core, notify)
     local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -44,7 +45,7 @@ function KillAura.Init(UI, Core, notify)
             Enabled = { Value = false, Default = false },
             Range = { Value = 10, Default = 10 },
             PreRange = { Value = 20, Default = 20 },
-            DodgeCooldown = { Value = 0.2, Default = 0.2 },
+            DodgeCooldown = { Value = 0.15, Default = 0.15 }, -- Уменьшено для более быстрого отклика
             TeamCheck = { Value = true, Default = true },
             KillAuraSync = { Value = false, Default = false },
             IdleSpoof = { Value = false, Default = false },
@@ -58,16 +59,16 @@ function KillAura.Init(UI, Core, notify)
             MissChance = { Value = 0, Default = 0 },
             LegitBlock = { Value = true, Default = true },
             LegitParry = { Value = true, Default = true },
-            BaseMultiplier = { Value = 0.15, Default = 0.15 },
-            DistanceFactor = { Value = 0.03, Default = 0.03 },
-            Delay = { Value = 0.02, Default = 0.02 },
+            BaseMultiplier = { Value = 0.1, Default = 0.1 }, -- Уменьшено для более быстрого реагирования
+            DistanceFactor = { Value = 0.02, Default = 0.02 }, -- Уменьшено для точности
+            Delay = { Value = 0.01, Default = 0.01 }, -- Уменьшено для более частого обновления
             Blocking = { Value = true, Default = true },
             BlockingAntiStun = { Value = true, Default = true },
-            RiposteMouseLockDuration = { Value = 1.5, Default = 1.5 },
-            MaxWaitTime = { Value = 2.0, Default = 2.0 },
-            PredictionTime = { Value = 0.1, Default = 0.1 },
-            ResolveAngle = { Value = false, Default = false },
-            AngleDelay = { Value = 0.1, Default = 0.1 }
+            RiposteMouseLockDuration = { Value = 1.2, Default = 1.2 }, -- Уменьшено для ускорения
+            MaxWaitTime = { Value = 1.5, Default = 1.5 }, -- Уменьшено для более быстрого реагирования
+            PredictionTime = { Value = 0.05, Default = 0.05 }, -- Уменьшено для оружия с коротким Release
+            ResolveAngle = { Value = true, Default = true },
+            AngleDelay = { Value = 0.05, Default = 0.05 } -- Уменьшено для более быстрого расчета углов
         }
     }
 
@@ -98,8 +99,8 @@ function KillAura.Init(UI, Core, notify)
 
     local INVALID_STANCES = {"windup", "release", "parrying", "unparry", "punching", "kickwindup", "kicking", "flinch", "recovery"}
     local VALID_HUMANOID_STATES = {Enum.HumanoidStateType.Running, Enum.HumanoidStateType.None}
-    local LATENCY_BUFFER = 0.035
-    local PREDICTION_THRESHOLD = 0.4
+    local LATENCY_BUFFER = 0.02 -- Уменьшено для снижения задержки
+    local PREDICTION_THRESHOLD = 0.3 -- Уменьшено для повышения точности
     local MAX_ADDITIONAL_TARGETS = 5
 
     local function getPlayerStance(player)
@@ -455,10 +456,11 @@ function KillAura.Init(UI, Core, notify)
         if stance ~= "release" then
             return false, 0
         end
-        local releaseTime = math.max(0.1, settings.Release - 0.1)
+        local releaseTime = math.max(0.05, settings.Release - 0.05) -- Минимальное значение для быстрого оружия
+        local adaptivePredictionTime = math.min(State.AutoDodge.PredictionTime.Value, releaseTime * 0.5) -- Адаптивное предсказание
         if State.AutoDodge.ResolveAngle.Value then
             if checkDamagePointCollision(targetPlayer, weapon) then
-                return true, math.max(0, releaseTime - LATENCY_BUFFER - State.AutoDodge.PredictionTime.Value)
+                return true, math.max(0, releaseTime - LATENCY_BUFFER - adaptivePredictionTime)
             else
                 local distance = getDmgPointDistance(targetPlayer, weapon)
                 if distance <= State.AutoDodge.Range.Value then
@@ -521,10 +523,10 @@ function KillAura.Init(UI, Core, notify)
             return false
         end
         if waitTime == math.huge or waitTime ~= waitTime then
-            waitTime = 0.3
+            waitTime = 0.2 -- Уменьшено для ускорения
         end
         if waitTime > State.AutoDodge.MaxWaitTime.Value then
-            waitTime = 0.3
+            waitTime = 0.2
         end
         waitTime = waitTime + State.AutoDodge.PredictionTime.Value
 
@@ -537,8 +539,8 @@ function KillAura.Init(UI, Core, notify)
                 local animation = Instance.new("Animation")
                 animation.AnimationId = "rbxassetid://" .. animations.Parry
                 animationTrack = localHumanoid:LoadAnimation(animation)
-                animationTrack:Play(0.1)
-                animationTrack:AdjustSpeed(1)
+                animationTrack:Play(0.05) -- Ускорено
+                animationTrack:AdjustSpeed(1.2) -- Ускорена анимация
                 localHumanoid.WalkSpeed = 7
             elseif action == "Riposte" and State.AutoDodge.LegitParry.Value and animations and animations.Riposte then
                 ChangeStance:FireServer("Riposte")
@@ -546,15 +548,15 @@ function KillAura.Init(UI, Core, notify)
                 local animation = Instance.new("Animation")
                 animation.AnimationId = "rbxassetid://" .. animations.Riposte
                 animationTrack = localHumanoid:LoadAnimation(animation)
-                animationTrack:Play(0.1)
+                animationTrack:Play(0.05) -- Ускорено
                 animationTrack:AdjustSpeed(0)
                 localHumanoid.WalkSpeed = 1
                 isRiposteActive = true
                 riposteEndTime = tick() + waitTime + State.AutoDodge.RiposteMouseLockDuration.Value
                 task.spawn(function()
-                    task.wait(0.5)
+                    task.wait(0.3) -- Уменьшено
                     if animationTrack and animationTrack.IsPlaying and animationTrack.TimePosition == 0 then
-                        animationTrack:Stop(0.7)
+                        animationTrack:Stop(0.5) -- Ускорено
                     end
                 end)
             end
@@ -576,18 +578,18 @@ function KillAura.Init(UI, Core, notify)
                         local idleAnimation = Instance.new("Animation")
                         idleAnimation.AnimationId = "rbxassetid://" .. animations.Idle
                         local idleAnimTrack = localHumanoid:LoadAnimation(idleAnimation)
-                        idleAnimTrack:Play(0.1)
-                        idleAnimTrack:AdjustSpeed(1)
+                        idleAnimTrack:Play(0.05) -- Ускорено
+                        idleAnimTrack:AdjustSpeed(1.2) -- Ускорена анимация
                         task.spawn(function()
-                            task.wait(0.5)
+                            task.wait(0.3) -- Уменьшено
                             if idleAnimTrack and idleAnimTrack.IsPlaying then
-                                idleAnimTrack:Stop(0.2)
+                                idleAnimTrack:Stop(0.1) -- Ускорено
                                 idleAnimTrack:Destroy()
                             end
                         end)
                     end
                 end
-                task.wait(0.05)
+                task.wait(0.03) -- Уменьшено
                 if desiredDodgeAction and not isPerformingAction then
                     ChangeStance:FireServer(desiredDodgeAction)
                 end
@@ -595,14 +597,14 @@ function KillAura.Init(UI, Core, notify)
         end
         if action == "Riposte" then
             ChangeStance:FireServer("RiposteDelay")
-            task.wait(0.7)
+            task.wait(0.5) -- Уменьшено
         else
             ChangeStance:FireServer("UnParry")
-            task.wait(0.01)
+            task.wait(0.005) -- Уменьшено
         end
 
         if animationTrack then
-            animationTrack:Stop(action == "Parrying" and 0.2 or 0.7)
+            animationTrack:Stop(action == "Parrying" and 0.1 or 0.5) -- Ускорено
             animationTrack:Destroy()
         end
         localHumanoid.WalkSpeed = 9
@@ -782,7 +784,7 @@ function KillAura.Init(UI, Core, notify)
                 local weapon, settings = getTargetWeaponSettings(closestTarget)
                 if weapon and settings and settings.Release then
                     lastTargetWeapon = weapon
-                    lastReleaseTime = math.max(0.1, settings.Release - 0.1)
+                    lastReleaseTime = math.max(0.05, settings.Release - 0.05)
                 else
                     lastTargetWeapon = nil
                     lastReleaseTime = nil
@@ -871,19 +873,19 @@ function KillAura.Init(UI, Core, notify)
                                     local idleAnimation = Instance.new("Animation")
                                     idleAnimation.AnimationId = "rbxassetid://" .. animations.Idle
                                     local idleAnimTrack = localHumanoid:LoadAnimation(idleAnimation)
-                                    idleAnimTrack:Play(0.1)
-                                    idleAnimTrack:AdjustSpeed(1)
+                                    idleAnimTrack:Play(0.05)
+                                    idleAnimTrack:AdjustSpeed(1.2)
                                     task.spawn(function()
-                                        task.wait(0.5)
+                                        task.wait(0.3)
                                         if idleAnimTrack and idleAnimTrack.IsPlaying then
-                                            idleAnimTrack:Stop(0.2)
+                                            idleAnimTrack:Stop(0.1)
                                             idleAnimTrack:Destroy()
                                         end
                                     end)
                                 end
                             end
                         end
-                        task.wait(0.05)
+                        task.wait(0.03)
                     end
                 end
                 if performDodgeAction(action, waitTime) then
@@ -893,7 +895,7 @@ function KillAura.Init(UI, Core, notify)
             elseif getPlayerStance(closestTarget) == "punching" and State.AutoDodge.Blocking.Value and State.AutoDodge.BlockingAntiStun.Value then
                 Core.BulwarkTarget.CombatState = "AutoDodge (AntiStun)"
                 ChangeStance:FireServer("UnParry")
-                task.wait(0.01)
+                task.wait(0.005)
                 ChangeStance:FireServer("Idle")
                 if State.AutoDodge.UseClientIdle.Value then
                     local settings, weapon = getLocalWeaponSettings()
@@ -904,12 +906,12 @@ function KillAura.Init(UI, Core, notify)
                             local idleAnimation = Instance.new("Animation")
                             idleAnimation.AnimationId = "rbxassetid://" .. animations.Idle
                             local idleAnimTrack = localHumanoid:LoadAnimation(idleAnimation)
-                            idleAnimTrack:Play(0.1)
-                            idleAnimTrack:AdjustSpeed(1)
+                            idleAnimTrack:Play(0.05)
+                            idleAnimTrack:AdjustSpeed(1.2)
                             task.spawn(function()
-                                task.wait(0.5)
+                                task.wait(0.3)
                                 if idleAnimTrack and idleAnimTrack.IsPlaying then
-                                    idleAnimTrack:Stop(0.2)
+                                    idleAnimTrack:Stop(0.1)
                                     idleAnimTrack:Destroy()
                                 end
                             end)
@@ -1711,5 +1713,6 @@ function KillAura.Init(UI, Core, notify)
         })
     end
 end
+
 
 return KillAura
