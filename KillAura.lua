@@ -59,7 +59,7 @@ function KillAura.Init(UI, Core, notify)
             Delay = { Value = 0.005, Default = 0.005 }, -- Уменьшено для ускорения
             Blocking = { Value = true, Default = true },
             BlockingAntiStun = { Value = true, Default = true },
-            RiposteMouseLockDuration = { Value = 1.0, Default = 1.0 },
+            RiposteMouseLockDuration = { Value = 0.3, Default = 0.3 },
             MaxWaitTime = { Value = 1.2, Default = 1.2 },
             PredictionTime = { Value = 0.04, Default = 0.04 },
             ResolveAngle = { Value = true, Default = true },
@@ -535,7 +535,7 @@ function KillAura.Init(UI, Core, notify)
         end
         waitTime = math.min(waitTime, State.AutoDodge.MaxWaitTime.Value)
         if waitTime == math.huge or waitTime ~= waitTime then
-            waitTime = 0.15
+            waitTime = 0.1
         end
         waitTime = waitTime + State.AutoDodge.PredictionTime.Value
 
@@ -562,7 +562,7 @@ function KillAura.Init(UI, Core, notify)
                 isRiposteActive = true
                 riposteEndTime = tick() + waitTime + State.AutoDodge.RiposteMouseLockDuration.Value
                 task.spawn(function()
-                    task.wait(0.25)
+                    task.wait(0.2)
                     if animationTrack and animationTrack.IsPlaying and animationTrack.TimePosition == 0 then
                         animationTrack:Stop(0.4)
                     end
@@ -611,7 +611,7 @@ function KillAura.Init(UI, Core, notify)
         end
 
         if animationTrack then
-            animationTrack:Stop(action == "Parrying" and 0.08 or 0.4)
+            animationTrack:Stop(action == "Parrying" and 0.08 or 0.3)
             animationTrack:Destroy()
         end
         localHumanoid.WalkSpeed = 9
@@ -1731,5 +1731,6 @@ function KillAura.Init(UI, Core, notify)
 end
 
 return KillAura
+
 
 
