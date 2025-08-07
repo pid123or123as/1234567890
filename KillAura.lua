@@ -1,5 +1,5 @@
 local KillAura = {}
-print('7')
+print('8')
 function KillAura.Init(UI, Core, notify)
     local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -59,11 +59,11 @@ function KillAura.Init(UI, Core, notify)
             Delay = { Value = 0.005, Default = 0.005 },
             Blocking = { Value = true, Default = true },
             BlockingAntiStun = { Value = true, Default = true },
-            RiposteMouseLockDuration = { Value = 1.5, Default = 1.5 }, -- Установлено на 1.5 секунд
-            MaxWaitTime = { Value = 1.2, Default = 1.2 },
+            RiposteMouseLockDuration = { Value = 1.5, Default = 1.5 },
+            MaxWaitTime = { Value = 1.1, Default = 1.1 },
             PredictionTime = { Value = 0.04, Default = 0.04 },
             ResolveAngle = { Value = true, Default = true },
-            AngleDelay = { Value = 0.04, Default = 0.04 },
+            AngleDelay = { Value = 0.02, Default = 0.02 },
             AdaptiveFactor = { Value = 0.5, Default = 0.5 }
         }
     }
@@ -95,12 +95,12 @@ function KillAura.Init(UI, Core, notify)
 
     local INVALID_STANCES = {"windup", "release", "parrying", "unparry", "punching", "kickwindup", "kicking", "flinch", "recovery"}
     local VALID_HUMANOID_STATES = {Enum.HumanoidStateType.Running, Enum.HumanoidStateType.None}
-    local LATENCY_BUFFER = 0.01
-    local PREDICTION_THRESHOLD = 0.25
+    local LATENCY_BUFFER = 0.02
+    local PREDICTION_THRESHOLD = 0.3
     local MAX_ADDITIONAL_TARGETS = 5
-    local ANGLE_THRESHOLD = 45
-    local MIN_RELEASE_TIME = 0.03
-    local DMGPOINT_SPEED_THRESHOLD = 5
+    local ANGLE_THRESHOLD = 35
+    local MIN_RELEASE_TIME = 0.04
+    local DMGPOINT_SPEED_THRESHOLD = 6
 
     local function getPlayerStance(player)
         if not player or not player.Character then
@@ -1719,3 +1719,4 @@ function KillAura.Init(UI, Core, notify)
 end
 
 return KillAura
+
