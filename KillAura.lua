@@ -1,5 +1,5 @@
 local KillAura = {}
-print('11')
+print('12')
 function KillAura.Init(UI, Core, notify)
     local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -1241,8 +1241,6 @@ function KillAura.Init(UI, Core, notify)
     Players.PlayerAdded:Connect(onCharacterAdded)
 
     task.spawn(runKillAura)
-
-local function SetupUI(UI, State, notify)
     local uiElements = {}
 
     if UI.Tabs and UI.Tabs.Combat then
@@ -1607,8 +1605,6 @@ local function SetupUI(UI, State, notify)
             end
         }, "KillAuraSync")
     end
-end
-SetupUI()
 end
 
 return KillAura
