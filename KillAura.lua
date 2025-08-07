@@ -1,5 +1,5 @@
 local KillAura = {}
-print('12')
+print('13')
 function KillAura.Init(UI, Core, notify)
     local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -55,7 +55,7 @@ function KillAura.Init(UI, Core, notify)
             LegitBlock = { Value = true, Default = true },
             LegitParry = { Value = true, Default = true },
             BaseMultiplier = { Value = 0.08, Default = 0.08 },
-            DistanceFactor = { Value = 0.02, Default = 0.02 },
+            DistanceFactor = { Value = 0.015, Default = 0.015 },
             Delay = { Value = 0.005, Default = 0.005 },
             Blocking = { Value = true, Default = true },
             BlockingAntiStun = { Value = true, Default = true },
@@ -95,12 +95,12 @@ function KillAura.Init(UI, Core, notify)
 
     local INVALID_STANCES = {"windup", "release", "parrying", "unparry", "punching", "kickwindup", "kicking", "flinch", "recovery"}
     local VALID_HUMANOID_STATES = {Enum.HumanoidStateType.Running, Enum.HumanoidStateType.None}
-    local LATENCY_BUFFER = 0.02
-    local PREDICTION_THRESHOLD = 0.3
+    local LATENCY_BUFFER = 0.01
+    local PREDICTION_THRESHOLD = 0.25
     local MAX_ADDITIONAL_TARGETS = 5
-    local ANGLE_THRESHOLD = 35
-    local MIN_RELEASE_TIME = 0.04
-    local DMGPOINT_SPEED_THRESHOLD = 6
+    local ANGLE_THRESHOLD = 50
+    local MIN_RELEASE_TIME = 0.03
+    local DMGPOINT_SPEED_THRESHOLD = 5
 
     local function getPlayerStance(player)
         if not player or not player.Character then
@@ -1608,3 +1608,4 @@ function KillAura.Init(UI, Core, notify)
 end
 
 return KillAura
+
