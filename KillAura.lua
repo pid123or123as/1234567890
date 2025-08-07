@@ -1,5 +1,5 @@
 local KillAura = {}
-print('5')
+print('6')
 function KillAura.Init(UI, Core, notify)
     local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -59,7 +59,7 @@ function KillAura.Init(UI, Core, notify)
             Delay = { Value = 0.005, Default = 0.005 },
             Blocking = { Value = true, Default = true },
             BlockingAntiStun = { Value = true, Default = true },
-            RiposteMouseLockDuration = { Value = 0.5, Default = 0.5 }, -- Изменено на 0.5 секунд
+            RiposteMouseLockDuration = { Value = 1.0, Default = 1.0 }, -- Возвращено на 1 секунду
             MaxWaitTime = { Value = 1.2, Default = 1.2 },
             PredictionTime = { Value = 0.04, Default = 0.04 },
             ResolveAngle = { Value = true, Default = true },
@@ -305,7 +305,7 @@ function KillAura.Init(UI, Core, notify)
             return false, 0
         end
 
-        local lastPos = dmgPointHistory[targetPlayer][#dmgPointHistory[targetPlayer] - 1].position
+        local lastPos = dmgPointHistory[targetPlayer][#dmgPointHistory[#dmgPointHistory[targetPlayer] - 1].position
         local timeDiff = currentTime - dmgPointHistory[targetPlayer][#dmgPointHistory[targetPlayer] - 1].time
         if timeDiff <= 0 then
             return false, 0
@@ -549,7 +549,7 @@ function KillAura.Init(UI, Core, notify)
                 animationTrack:AdjustSpeed(0)
                 localHumanoid.WalkSpeed = 1
                 isRiposteActive = true
-                riposteEndTime = tick() + State.AutoDodge.RiposteMouseLockDuration.Value
+                riposteEndTime = tick() + (State.AutoDodge.RiposteMouseLockDuration.Value / 3) -- MouseLockDuration = WalkSpeed time / 3
                 task.spawn(function()
                     task.wait(0.25)
                     if animationTrack and animationTrack.IsPlaying and animationTrack.TimePosition == 0 then
@@ -607,7 +607,7 @@ function KillAura.Init(UI, Core, notify)
 
         ChangeStance:FireServer("Idle")
         if action == "Riposte" then
-            task.wait(State.AutoDodge.RiposteMouseLockDuration.Value)
+            task.wait(State.AutoDodge.RiposteMouseLockDuration.Value / 3) -- Ждем MouseLockDuration
             isRiposteActive = false
         end
         lastDodgeTime = tick()
@@ -1719,3 +1719,4 @@ function KillAura.Init(UI, Core, notify)
 end
 
 return KillAura
+
