@@ -1,5 +1,5 @@
 local KillAura = {}
-print('9')
+print('10')
 function KillAura.Init(UI, Core, notify)
     local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -1245,7 +1245,7 @@ function KillAura.Init(UI, Core, notify)
 local function SetupUI(UI, State, notify, Core)
     local uiElements = {}
 
-    if UI.Tabs and UI.Tabs.Combat then
+    if UI.Tabs.Combat then
         UI.Sections.KillAura = UI.Sections.KillAura or UI.Tabs.Combat:Section({ Name = "KillAura", Side = "Left" })
         UI.Sections.KillAura:Header({ Name = "KillAura" })
         uiElements.KillAuraEnabled = UI.Sections.KillAura:Toggle({
@@ -1717,3 +1717,4 @@ SetupUI()
 end
 
 return KillAura
+
