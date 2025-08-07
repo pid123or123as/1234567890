@@ -56,10 +56,10 @@ function KillAura.Init(UI, Core, notify)
             LegitParry = { Value = true, Default = true },
             BaseMultiplier = { Value = 0.08, Default = 0.08 },
             DistanceFactor = { Value = 0.015, Default = 0.015 },
-            Delay = { Value = 0.005, Default = 0.005 }, -- Уменьшено для ускорения
+            Delay = { Value = 0.005, Default = 0.005 },
             Blocking = { Value = true, Default = true },
             BlockingAntiStun = { Value = true, Default = true },
-            RiposteMouseLockDuration = { Value = 0.3, Default = 0.3 },
+            RiposteMouseLockDuration = { Value = 0.5, Default = 0.5 }, -- Изменено на 0.5 секунд
             MaxWaitTime = { Value = 1.2, Default = 1.2 },
             PredictionTime = { Value = 0.04, Default = 0.04 },
             ResolveAngle = { Value = true, Default = true },
@@ -90,17 +90,17 @@ function KillAura.Init(UI, Core, notify)
     local desiredDodgeAction = nil
     local lastAngle = nil
     local lastAngleTime = 0
-    local dmgPointHistory = {} -- История позиций DmgPoint
-    local trajectoryCache = {} -- Кэш результатов анализа траектории
+    local dmgPointHistory = {}
+    local trajectoryCache = {}
 
     local INVALID_STANCES = {"windup", "release", "parrying", "unparry", "punching", "kickwindup", "kicking", "flinch", "recovery"}
     local VALID_HUMANOID_STATES = {Enum.HumanoidStateType.Running, Enum.HumanoidStateType.None}
-    local LATENCY_BUFFER = 0.01 -- Уменьшено для ускорения
+    local LATENCY_BUFFER = 0.01
     local PREDICTION_THRESHOLD = 0.25
     local MAX_ADDITIONAL_TARGETS = 5
-    local ANGLE_THRESHOLD = 45 -- Восстановлено для стабильности
+    local ANGLE_THRESHOLD = 45
     local MIN_RELEASE_TIME = 0.03
-    local DMGPOINT_SPEED_THRESHOLD = 5 -- Порог скорости для Drag-атак
+    local DMGPOINT_SPEED_THRESHOLD = 5
 
     local function getPlayerStance(player)
         if not player or not player.Character then
@@ -289,21 +289,18 @@ function KillAura.Init(UI, Core, notify)
         local currentPos = dmgPoint.WorldPosition
         local currentTime = tick()
 
-        -- Проверка кэша
         if trajectoryCache[targetPlayer] and trajectoryCache[targetPlayer].time == currentTime then
             return trajectoryCache[targetPlayer].isDrag, trajectoryCache[targetPlayer].velocity
         end
 
-        -- Сохраняем историю позиций
         if not dmgPointHistory[targetPlayer] then
             dmgPointHistory[targetPlayer] = {}
         end
         table.insert(dmgPointHistory[targetPlayer], {position = currentPos, time = currentTime})
-        if #dmgPointHistory[targetPlayer] > 3 then -- Уменьшено до 3
+        if #dmgPointHistory[targetPlayer] > 3 then
             table.remove(dmgPointHistory[targetPlayer], 1)
         end
 
-        -- Анализируем скорость и направление
         if #dmgPointHistory[targetPlayer] < 2 then
             return false, 0
         end
@@ -321,7 +318,6 @@ function KillAura.Init(UI, Core, notify)
 
         local isDrag = velocity < DMGPOINT_SPEED_THRESHOLD and directionConsistency > 0.9
 
-        -- Сохраняем в кэш
         trajectoryCache[targetPlayer] = {
             isDrag = isDrag,
             velocity = velocity,
@@ -351,13 +347,11 @@ function KillAura.Init(UI, Core, notify)
         local targetLookDirection = targetRootPart.CFrame.LookVector
         local currentAngle = math.deg(math.acos(directionToPlayer:Dot(targetLookDirection)))
 
-        -- Проверка на Drag-атаку
         local isDragAttack, _ = analyzeDmgPointTrajectory(targetPlayer, weapon)
         if isDragAttack then
-            return false -- Drag-атака не считается байтом
+            return false
         end
 
-        -- Проверка расстояния от DmgPoint до хитбоксов
         local hitboxes = {
             localCharacter:FindFirstChild("Head"),
             localCharacter:FindFirstChild("Torso"),
@@ -371,7 +365,7 @@ function KillAura.Init(UI, Core, notify)
                 local distance = (dmgPoint.WorldPosition - hitbox.Position).Magnitude
                 local hitboxSize = hitbox.Size.Magnitude / 2
                 if distance <= hitboxSize + PREDICTION_THRESHOLD then
-                    return false -- DmgPoint в зоне поражения, не байт
+                    return false
                 end
             end
         end
@@ -440,10 +434,9 @@ function KillAura.Init(UI, Core, notify)
         local predictedDistance = (localRootPart.Position - predictedPos).Magnitude
         local timeToHit = predictedDistance / (settings.Release * State.AutoDodge.AdaptiveFactor.Value)
 
-        -- Проверка на Drag-атаку
         local isDragAttack, _ = analyzeDmgPointTrajectory(targetPlayer, weapon)
         if isDragAttack then
-            timeToHit = timeToHit * 0.8 -- Ускоряем реакцию на Drag-атаки
+            timeToHit = timeToHit * 0.8
         end
 
         return predictedDistance <= State.AutoDodge.Range.Value, math.max(MIN_RELEASE_TIME, timeToHit - LATENCY_BUFFER)
@@ -467,13 +460,10 @@ function KillAura.Init(UI, Core, notify)
         local releaseTime = math.max(MIN_RELEASE_TIME, settings.Release - 0.03)
         if State.AutoDodge.ResolveAngle.Value then
             if checkDamagePointCollision(targetPlayer, weapon) then
-                -- Логирование для отладки
-                -- print("[AutoDodge] Collision detected for", targetPlayer.Name, "at", tick())
                 return true, math.max(MIN_RELEASE_TIME, releaseTime - LATENCY_BUFFER - State.AutoDodge.PredictionTime.Value)
             else
                 local willHit, waitTime = predictAttackTrajectory(targetPlayer, weapon, settings)
                 if willHit then
-                    -- print("[AutoDodge] Predicted hit for", targetPlayer.Name, "waitTime:", waitTime)
                     return true, waitTime * (State.AutoDodge.BaseMultiplier.Value + getDmgPointDistance(targetPlayer, weapon) * State.AutoDodge.DistanceFactor.Value)
                 end
             end
@@ -491,7 +481,6 @@ function KillAura.Init(UI, Core, notify)
             isDodgePending = false
             desiredDodgeAction = nil
             Core.BulwarkTarget.CombatState = nil
-            -- print("[AutoDodge] Skipped action due to cooldown or action in progress")
             return false
         end
         isPerformingAction = true
@@ -535,7 +524,7 @@ function KillAura.Init(UI, Core, notify)
         end
         waitTime = math.min(waitTime, State.AutoDodge.MaxWaitTime.Value)
         if waitTime == math.huge or waitTime ~= waitTime then
-            waitTime = 0.1
+            waitTime = 0.15
         end
         waitTime = waitTime + State.AutoDodge.PredictionTime.Value
 
@@ -560,9 +549,9 @@ function KillAura.Init(UI, Core, notify)
                 animationTrack:AdjustSpeed(0)
                 localHumanoid.WalkSpeed = 1
                 isRiposteActive = true
-                riposteEndTime = tick() + waitTime + State.AutoDodge.RiposteMouseLockDuration.Value
+                riposteEndTime = tick() + State.AutoDodge.RiposteMouseLockDuration.Value
                 task.spawn(function()
-                    task.wait(0.2)
+                    task.wait(0.25)
                     if animationTrack and animationTrack.IsPlaying and animationTrack.TimePosition == 0 then
                         animationTrack:Stop(0.4)
                     end
@@ -611,7 +600,7 @@ function KillAura.Init(UI, Core, notify)
         end
 
         if animationTrack then
-            animationTrack:Stop(action == "Parrying" and 0.08 or 0.3)
+            animationTrack:Stop(action == "Parrying" and 0.08 or 0.4)
             animationTrack:Destroy()
         end
         localHumanoid.WalkSpeed = 9
@@ -626,7 +615,6 @@ function KillAura.Init(UI, Core, notify)
         isDodgePending = false
         desiredDodgeAction = nil
         Core.BulwarkTarget.CombatState = nil
-        -- print("[AutoDodge] Performed", action, "at", tick())
         return true
     end
 
@@ -1731,6 +1719,3 @@ function KillAura.Init(UI, Core, notify)
 end
 
 return KillAura
-
-
-
