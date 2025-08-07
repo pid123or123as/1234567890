@@ -1,5 +1,5 @@
 local KillAura = {}
-print('16')
+print('17')
 function KillAura.Init(UI, Core, notify)
     local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -98,7 +98,7 @@ function KillAura.Init(UI, Core, notify)
     local LATENCY_BUFFER = 0.015
     local PREDICTION_THRESHOLD = 0.1
     local MAX_ADDITIONAL_TARGETS = 5
-    local ANGLE_THRESHOLD = 30
+    local ANGLE_THRESHOLD = 45
     local MIN_RELEASE_TIME = 0.025
     local DMGPOINT_SPEED_THRESHOLD = 5
 
@@ -1608,6 +1608,7 @@ function KillAura.Init(UI, Core, notify)
 end
 
 return KillAura
+
 
 
 
