@@ -1,5 +1,5 @@
 local KillAura = {}
-print('13')
+print('15')
 function KillAura.Init(UI, Core, notify)
     local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -55,15 +55,15 @@ function KillAura.Init(UI, Core, notify)
             LegitBlock = { Value = true, Default = true },
             LegitParry = { Value = true, Default = true },
             BaseMultiplier = { Value = 0.08, Default = 0.08 },
-            DistanceFactor = { Value = 0.015, Default = 0.015 },
+            DistanceFactor = { Value = 0.025, Default = 0.025 },
             Delay = { Value = 0.005, Default = 0.005 },
             Blocking = { Value = true, Default = true },
             BlockingAntiStun = { Value = true, Default = true },
             RiposteMouseLockDuration = { Value = 1.5, Default = 1.5 },
-            MaxWaitTime = { Value = 1.1, Default = 1.1 },
+            MaxWaitTime = { Value = 1.3, Default = 1.3 },
             PredictionTime = { Value = 0.04, Default = 0.04 },
             ResolveAngle = { Value = true, Default = true },
-            AngleDelay = { Value = 0.01, Default = 0.01 },
+            AngleDelay = { Value = 0.009, Default = 0.009 },
             AdaptiveFactor = { Value = 0.5, Default = 0.5 }
         }
     }
@@ -1608,4 +1608,5 @@ function KillAura.Init(UI, Core, notify)
 end
 
 return KillAura
+
 
