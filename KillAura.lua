@@ -1,5 +1,5 @@
 local KillAura = {}
-print('10')
+print('11')
 function KillAura.Init(UI, Core, notify)
     local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -1242,10 +1242,10 @@ function KillAura.Init(UI, Core, notify)
 
     task.spawn(runKillAura)
 
-local function SetupUI(UI, State, notify, Core)
+local function SetupUI(UI, State, notify)
     local uiElements = {}
 
-    if UI.Tabs.Combat then
+    if UI.Tabs and UI.Tabs.Combat then
         UI.Sections.KillAura = UI.Sections.KillAura or UI.Tabs.Combat:Section({ Name = "KillAura", Side = "Left" })
         UI.Sections.KillAura:Header({ Name = "KillAura" })
         uiElements.KillAuraEnabled = UI.Sections.KillAura:Toggle({
@@ -1254,12 +1254,9 @@ local function SetupUI(UI, State, notify, Core)
             Callback = function(value)
                 State.KillAura.Enabled.Value = value
                 Core.BulwarkTarget.isKillAura = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("KillAura", "KillAura " .. (value and "Enabled" or "Disabled"), true)
-                end
-            end,
-        }, 'EnabledKA')
+                notify("KillAura", "KillAura " .. (value and "Enabled" or "Disabled"), true)
+            end
+        }, "EnabledKA")
         uiElements.KillAuraRange = UI.Sections.KillAura:Slider({
             Name = "Range",
             Minimum = 4,
@@ -1268,12 +1265,9 @@ local function SetupUI(UI, State, notify, Core)
             Precision = 0,
             Callback = function(value)
                 State.KillAura.Range.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("KillAura", "Range set to: " .. value)
-                end
-            end,
-        }, 'RangeKA')
+                notify("KillAura", "Range set to: " .. value)
+            end
+        }, "RangeKA")
         uiElements.KillAuraAttackCooldown = UI.Sections.KillAura:Slider({
             Name = "Attack Cooldown",
             Minimum = 0.1,
@@ -1282,127 +1276,97 @@ local function SetupUI(UI, State, notify, Core)
             Precision = 2,
             Callback = function(value)
                 State.KillAura.AttackCooldown.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("KillAura", "Attack Cooldown set to: " .. value)
-                end
-            end,
-        }, 'AttackCooldownKA')
-        uiElements.KillAuraDynamicCooldown = UI.Sections.KillAura:Toggle({
+                notify("KillAura", "Attack Cooldown set to: " .. value)
+            end
+        }, "AttackCooldownKA")
+        UI.Sections.KillAura:Toggle({
             Name = "Dynamic Cooldown",
             Default = State.KillAura.DynamicCooldown.Default,
             Callback = function(value)
                 State.KillAura.DynamicCooldown.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("KillAura", "Dynamic Cooldown " .. (value and "Enabled" or "Disabled"), true)
-                end
-            end,
-        }, 'DynamicCooldownKA')
-        uiElements.KillAuraAntiBlock = UI.Sections.KillAura:Toggle({
+                notify("KillAura", "Dynamic Cooldown " .. (value and "Enabled" or "Disabled"), true)
+            end
+        }, "DynamicCooldownKA")
+        UI.Sections.KillAura:Divider()
+        UI.Sections.KillAura:Toggle({
             Name = "Anti Block",
             Default = State.KillAura.AntiBlock.Default,
             Callback = function(value)
                 State.KillAura.AntiBlock.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("KillAura", "Anti Block " .. (value and "Enabled" or "Disabled"), true)
-                end
-            end,
-        }, 'AntiBlockKA')
-        uiElements.KillAuraAntiParry = UI.Sections.KillAura:Toggle({
+                notify("KillAura", "Anti Block " .. (value and "Enabled" or "Disabled"), true)
+            end
+        }, "AntiBlockKA")
+        UI.Sections.KillAura:Toggle({
             Name = "Anti Parry",
             Default = State.KillAura.AntiParry.Default,
             Callback = function(value)
                 State.KillAura.AntiParry.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("KillAura", "Anti Parry " .. (value and "Enabled" or "Disabled"), true)
-                end
-            end,
-        }, 'AntiParryKA')
-        uiElements.KillAuraMultiTarget = UI.Sections.KillAura:Toggle({
+                notify("KillAura", "Anti Parry " .. (value and "Enabled" or "Disabled"), true)
+            end
+        }, "AntiParryKA")
+        UI.Sections.KillAura:Toggle({
             Name = "Multi Target",
             Default = State.KillAura.MultiTarget.Default,
             Callback = function(value)
                 State.KillAura.MultiTarget.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("KillAura", "Multi Target " .. (value and "Enabled" or "Disabled"), true)
-                end
-            end,
-        }, 'MultiTargetKA')
-        uiElements.KillAuraMultiAntiCounter = UI.Sections.KillAura:Toggle({
+                notify("KillAura", "Multi Target " .. (value and "Enabled" or "Disabled"), true)
+            end
+        }, "MultiTargetKA")
+        UI.Sections.KillAura:Toggle({
             Name = "Multi Anti Counter",
             Default = State.KillAura.MultiAntiCounter.Default,
             Callback = function(value)
                 State.KillAura.MultiAntiCounter.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("KillAura", "Multi Anti Counter " .. (value and "Enabled" or "Disabled"), true)
-                end
-            end,
-        }, 'MultiAntiCounterKA')
-        uiElements.KillAuraHighlightBlock = UI.Sections.KillAura:Toggle({
+                notify("KillAura", "Multi Anti Counter " .. (value and "Enabled" or "Disabled"), true)
+            end
+        }, "MultiAntiCounterKA")
+        UI.Sections.KillAura:Divider()
+        UI.Sections.KillAura:Toggle({
             Name = "Highlight Block",
             Default = State.KillAura.HighlightBlock.Default,
             Callback = function(value)
                 State.KillAura.HighlightBlock.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("KillAura", "Highlight Block " .. (value and "Enabled" or "Disabled"), true)
-                end
-            end,
-        }, 'HighlightBlockKA')
-        uiElements.KillAuraHighlightParry = UI.Sections.KillAura:Toggle({
+                notify("KillAura", "Highlight Block " .. (value and "Enabled" or "Disabled"), true)
+            end
+        }, "HighlightBlockKA")
+        UI.Sections.KillAura:Toggle({
             Name = "Highlight Parry",
             Default = State.KillAura.HighlightParry.Default,
             Callback = function(value)
                 State.KillAura.HighlightParry.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("KillAura", "Highlight Parry " .. (value and "Enabled" or "Disabled"), true)
-                end
-            end,
-        }, 'HighlightParryKA')
-        uiElements.KillAuraParryColor = UI.Sections.KillAura:Colorpicker({
+                notify("KillAura", "Highlight Parry " .. (value and "Enabled" or "Disabled"), true)
+            end
+        }, "HighlightParryKA")
+        UI.Sections.KillAura:Divider()
+        UI.Sections.KillAura:Colorpicker({
             Name = "Parry Color",
             Default = State.KillAura.ParryColor.Default,
             Callback = function(value)
                 State.KillAura.ParryColor.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("KillAura", "Parry Color set to: R=" .. math.floor(value.R * 255) .. ", G=" .. math.floor(value.G * 255) .. ", B=" .. math.floor(value.B * 255))
-                end
-            end,
-        }, 'ParryColorKA')
-        uiElements.KillAuraBlockColor = UI.Sections.KillAura:Colorpicker({
+                notify("KillAura", "Parry Color set to: R=" .. math.floor(value.R * 255) .. ", G=" .. math.floor(value.G * 255) .. ", B=" .. math.floor(value.B * 255))
+            end
+        }, "ParryColorKA")
+        UI.Sections.KillAura:Colorpicker({
             Name = "Block Color",
             Default = State.KillAura.BlockColor.Default,
             Callback = function(value)
                 State.KillAura.BlockColor.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("KillAura", "Block Color set to: R=" .. math.floor(value.R * 255) .. ", G=" .. math.floor(value.G * 255) .. ", B=" .. math.floor(value.B * 255))
-                end
-            end,
-        }, 'BlockColorKA')
-        uiElements.KillAuraDefaultColor = UI.Sections.KillAura:Colorpicker({
+                notify("KillAura", "Block Color set to: R=" .. math.floor(value.R * 255) .. ", G=" .. math.floor(value.G * 255) .. ", B=" .. math.floor(value.B * 255))
+            end
+        }, "BlockColorKA")
+        UI.Sections.KillAura:Colorpicker({
             Name = "Default Color",
             Default = State.KillAura.DefaultColor.Default,
             Callback = function(value)
                 State.KillAura.DefaultColor.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("KillAura", "Default Color set to: R=" .. math.floor(value.R * 255) .. ", G=" .. math.floor(value.G * 255) .. ", B=" .. math.floor(value.B * 255))
-                end
-            end,
-        }, 'DefaultColorKA')
+                notify("KillAura", "Default Color set to: R=" .. math.floor(value.R * 255) .. ", G=" .. math.floor(value.G * 255) .. ", B=" .. math.floor(value.B * 255))
+            end
+        }, "DefaultColorKA")
 
         UI.Sections.ToolExploit = UI.Sections.ToolExploit or UI.Tabs.Combat:Section({ Name = "ToolExploit", Side = "Right" })
         UI.Sections.ToolExploit:Header({ Name = "Tool Exploit" })
         UI.Sections.ToolExploit:SubLabel({ Text = "Only for KillAura, reduces the preparation time for an attack"})
-        uiElements.KillAuraMinusWindup = UI.Sections.ToolExploit:Slider({
+        uiElements.ToolExploitMinusWindup = UI.Sections.ToolExploit:Slider({
             Name = "Minus Windup",
             Minimum = 0.1,
             Maximum = 2,
@@ -1410,13 +1374,10 @@ local function SetupUI(UI, State, notify, Core)
             Precision = 1,
             Callback = function(value)
                 State.KillAura.MinusWindup.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("ToolExploit", "Minus Windup set to: " .. value)
-                end
-            end,
-        }, 'MinusWindupTE')
-        uiElements.KillAuraMinusRelease = UI.Sections.ToolExploit:Slider({
+                notify("ToolExploit", "Minus Windup set to: " .. value)
+            end
+        }, "MinusWindupTE")
+        uiElements.ToolExploitMinusRelease = UI.Sections.ToolExploit:Slider({
             Name = "Minus Release",
             Minimum = 0.1,
             Maximum = 2,
@@ -1424,13 +1385,11 @@ local function SetupUI(UI, State, notify, Core)
             Precision = 1,
             Callback = function(value)
                 State.KillAura.MinusRelease.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("ToolExploit", "Minus Release set to: " .. value)
-                end
-            end,
-        }, 'MinusReleaseTE')
-        uiElements.KillAuraKickDelay = UI.Sections.ToolExploit:Slider({
+                notify("ToolExploit", "Minus Release set to: " .. value)
+            end
+        }, "MinusReleaseTE")
+        UI.Sections.ToolExploit:Divider()
+        uiElements.ToolExploitKickDelay = UI.Sections.ToolExploit:Slider({
             Name = "Kick Delay",
             Minimum = 0.01,
             Maximum = 0.2,
@@ -1438,13 +1397,10 @@ local function SetupUI(UI, State, notify, Core)
             Precision = 3,
             Callback = function(value)
                 State.KillAura.KickDelay.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("ToolExploit", "Kick Delay set to: " .. value)
-                end
-            end,
-        }, 'KickDelayTE')
-        uiElements.KillAuraKickStateDelay = UI.Sections.ToolExploit:Slider({
+                notify("ToolExploit", "Kick Delay set to: " .. value)
+            end
+        }, "KickDelayTE")
+        uiElements.ToolExploitKickStateDelay = UI.Sections.ToolExploit:Slider({
             Name = "Kick State Delay",
             Minimum = 0.01,
             Maximum = 0.2,
@@ -1452,27 +1408,21 @@ local function SetupUI(UI, State, notify, Core)
             Precision = 3,
             Callback = function(value)
                 State.KillAura.KickStateDelay.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("ToolExploit", "Kick State Delay set to: " .. value)
-                end
-            end,
-        }, 'KickStateDelayTE')
+                notify("ToolExploit", "Kick State Delay set to: " .. value)
+            end
+        }, "KickStateDelayTE")
 
         UI.Sections.AutoDodge = UI.Sections.AutoDodge or UI.Tabs.Combat:Section({ Name = "AutoDodge", Side = "Right" })
         UI.Sections.AutoDodge:Header({ Name = "Auto Dodge" })
-        uiElements.AutoDodgeEnabled = UI.Sections.AutoDodge:Toggle({
+        UI.Sections.AutoDodge:Toggle({
             Name = "Enabled",
             Default = State.AutoDodge.Enabled.Default,
             Callback = function(value)
                 State.AutoDodge.Enabled.Value = value
                 Core.BulwarkTarget.isAutoDodge = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("AutoDodge", "AutoDodge " .. (value and "Enabled" or "Disabled"), true)
-                end
-            end,
-        }, 'EnabledAD')
+                notify("AutoDodge", "AutoDodge " .. (value and "Enabled" or "Disabled"), true)
+            end
+        }, "EnabledAD")
         uiElements.AutoDodgeRange = UI.Sections.AutoDodge:Slider({
             Name = "Range",
             Minimum = 4,
@@ -1481,12 +1431,9 @@ local function SetupUI(UI, State, notify, Core)
             Precision = 0,
             Callback = function(value)
                 State.AutoDodge.Range.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("AutoDodge", "Range set to: " .. value)
-                end
-            end,
-        }, 'RangeAD')
+                notify("AutoDodge", "Range set to: " .. value)
+            end
+        }, "RangeAD")
         uiElements.AutoDodgePreRange = UI.Sections.AutoDodge:Slider({
             Name = "PreRange",
             Minimum = 8,
@@ -1495,12 +1442,9 @@ local function SetupUI(UI, State, notify, Core)
             Precision = 0,
             Callback = function(value)
                 State.AutoDodge.PreRange.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("AutoDodge", "PreRange set to: " .. value)
-                end
-            end,
-        }, 'PreRangeAD')
+                notify("AutoDodge", "PreRange set to: " .. value)
+            end
+        }, "PreRangeAD")
         uiElements.AutoDodgeDodgeCooldown = UI.Sections.AutoDodge:Slider({
             Name = "Dodge Cooldown",
             Minimum = 0.1,
@@ -1509,12 +1453,9 @@ local function SetupUI(UI, State, notify, Core)
             Precision = 1,
             Callback = function(value)
                 State.AutoDodge.DodgeCooldown.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("AutoDodge", "Dodge Cooldown set to: " .. value)
-                end
-            end,
-        }, 'DodgeCooldownAD')
+                notify("AutoDodge", "Dodge Cooldown set to: " .. value)
+            end
+        }, "DodgeCooldownAD")
         uiElements.AutoDodgePredictionTime = UI.Sections.AutoDodge:Slider({
             Name = "Prediction Time",
             Minimum = 0,
@@ -1523,12 +1464,9 @@ local function SetupUI(UI, State, notify, Core)
             Precision = 2,
             Callback = function(value)
                 State.AutoDodge.PredictionTime.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("AutoDodge", "Prediction Time set to: " .. value)
-                end
-            end,
-        }, 'PredictionTimeAD')
+                notify("AutoDodge", "Prediction Time set to: " .. value)
+            end
+        }, "PredictionTimeAD")
         uiElements.AutoDodgeAdaptiveFactor = UI.Sections.AutoDodge:Slider({
             Name = "Adaptive Factor",
             Minimum = 0.1,
@@ -1537,80 +1475,61 @@ local function SetupUI(UI, State, notify, Core)
             Precision = 2,
             Callback = function(value)
                 State.AutoDodge.AdaptiveFactor.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("AutoDodge", "Adaptive Factor set to: " .. value)
-                end
-            end,
-        }, 'AdaptiveFactorAD')
-        uiElements.AutoDodgeBlockingMode = UI.Sections.AutoDodge:Dropdown({
+                notify("AutoDodge", "Adaptive Factor set to: " .. value)
+            end
+        }, "AdaptiveFactorAD")
+        UI.Sections.AutoDodge:Divider()
+        UI.Sections.AutoDodge:Dropdown({
             Name = "Blocking Mode",
             Options = {"Parrying", "Riposte", "Chance"},
             Default = State.AutoDodge.BlockingMode.Default,
             Callback = function(value)
                 State.AutoDodge.BlockingMode.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("AutoDodge", "Blocking Mode set to: " .. value)
-                end
-            end,
-        }, 'BlockingModeAD')
-        uiElements.AutoDodgeTeamCheck = UI.Sections.AutoDodge:Toggle({
+                notify("AutoDodge", "Blocking Mode set to: " .. value)
+            end
+        }, "BlockingModeAD")
+        UI.Sections.AutoDodge:Toggle({
             Name = "Team Check",
             Default = State.AutoDodge.TeamCheck.Default,
             Callback = function(value)
                 State.AutoDodge.TeamCheck.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("AutoDodge", "Team Check " .. (value and "Enabled" or "Disabled"), true)
-                end
-            end,
-        }, 'TeamCheckAD')
-        uiElements.AutoDodgeKillAuraSync = UI.Sections.AutoDodge:Toggle({
+                notify("AutoDodge", "Team Check " .. (value and "Enabled" or "Disabled"), true)
+            end
+        }, "TeamCheckAD")
+        UI.Sections.AutoDodge:Toggle({
             Name = "KillAura Sync",
             Default = State.AutoDodge.KillAuraSync.Default,
             Callback = function(value)
                 State.AutoDodge.KillAuraSync.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("AutoDodge", "KillAura Sync " .. (value and "Enabled" or "Disabled"), true)
-                end
-            end,
-        }, 'KillAuraSyncAD')
-        uiElements.AutoDodgeIdleSpoof = UI.Sections.AutoDodge:Toggle({
+                notify("AutoDodge", "KillAura Sync " .. (value and "Enabled" or "Disabled"), true)
+            end
+        }, "KillAuraSyncAD")
+        UI.Sections.AutoDodge:Toggle({
             Name = "Idle Spoof",
             Default = State.AutoDodge.IdleSpoof.Default,
             Callback = function(value)
                 State.AutoDodge.IdleSpoof.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("AutoDodge", "Idle Spoof " .. (value and "Enabled" or "Disabled"), true)
-                end
-            end,
-        }, 'IdleSpoofAD')
+                notify("AutoDodge", "Idle Spoof " .. (value and "Enabled" or "Disabled"), true)
+            end
+        }, "IdleSpoofAD")
         UI.Sections.AutoDodge:SubLabel({ Text = "[❗] Recommend use Idle Spoof ONLY with Block mode, parry mode may cause crashes "})
-        uiElements.AutoDodgeUseClientIdle = UI.Sections.AutoDodge:Toggle({
+        UI.Sections.AutoDodge:Toggle({
             Name = "Use Client Idle",
             Default = State.AutoDodge.UseClientIdle.Default,
             Callback = function(value)
                 State.AutoDodge.UseClientIdle.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("AutoDodge", "Use Client Idle " .. (value and "Enabled" or "Disabled"), true)
-                end
-            end,
-        }, 'UseClientIdleAD')
-        uiElements.AutoDodgeResolveAngle = UI.Sections.AutoDodge:Toggle({
+                notify("AutoDodge", "Use Client Idle " .. (value and "Enabled" or "Disabled"), true)
+            end
+        }, "UseClientIdleAD")
+        UI.Sections.AutoDodge:Toggle({
             Name = "Resolve Angle",
             Default = State.AutoDodge.ResolveAngle.Default,
             Callback = function(value)
                 State.AutoDodge.ResolveAngle.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("AutoDodge", "Resolve Angle " .. (value and "Enabled" or "Disabled"), true)
-                end
-            end,
-        }, 'ResolveAngleAD')
+                notify("AutoDodge", "Resolve Angle " .. (value and "Enabled" or "Disabled"), true)
+            end
+        }, "ResolveAngleAD")
+        UI.Sections.AutoDodge:Divider()
         uiElements.AutoDodgeParryingChance = UI.Sections.AutoDodge:Slider({
             Name = "Block Chance",
             Minimum = 0,
@@ -1620,12 +1539,9 @@ local function SetupUI(UI, State, notify, Core)
             Default = State.AutoDodge.ParryingChance.Default,
             Callback = function(value)
                 State.AutoDodge.ParryingChance.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("AutoDodge", "Parrying Chance set to: " .. value .. "%")
-                end
-            end,
-        }, 'ParryingChanceAD')
+                notify("AutoDodge", "Parrying Chance set to: " .. value .. "%")
+            end
+        }, "ParryingChanceAD")
         uiElements.AutoDodgeRiposteChance = UI.Sections.AutoDodge:Slider({
             Name = "Parry Chance",
             Minimum = 0,
@@ -1635,12 +1551,9 @@ local function SetupUI(UI, State, notify, Core)
             Default = State.AutoDodge.RiposteChance.Default,
             Callback = function(value)
                 State.AutoDodge.RiposteChance.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("AutoDodge", "Parry Chance set to: " .. value .. "%")
-                end
-            end,
-        }, 'RiposteChanceAD')
+                notify("AutoDodge", "Parry Chance set to: " .. value .. "%")
+            end
+        }, "RiposteChanceAD")
         uiElements.AutoDodgeMissChance = UI.Sections.AutoDodge:Slider({
             Name = "Miss Chance",
             Minimum = 0,
@@ -1649,72 +1562,53 @@ local function SetupUI(UI, State, notify, Core)
             Precision = 1,
             Callback = function(value)
                 State.AutoDodge.MissChance.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("AutoDodge", "Miss Chance set to: " .. value)
-                end
-            end,
-        }, 'MissChanceAD')
-        uiElements.AutoDodgeLegitBlock = UI.Sections.AutoDodge:Toggle({
+                notify("AutoDodge", "Miss Chance set to: " .. value)
+            end
+        }, "MissChanceAD")
+        UI.Sections.AutoDodge:Divider()
+        UI.Sections.AutoDodge:Toggle({
             Name = "Legit Block",
             Default = State.AutoDodge.LegitBlock.Default,
             Callback = function(value)
                 State.AutoDodge.LegitBlock.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("AutoDodge", "Legit Block " .. (value and "Enabled" or "Disabled"), true)
-                end
-            end,
-        }, 'LegitBlockAD')
-        uiElements.AutoDodgeLegitParry = UI.Sections.AutoDodge:Toggle({
+                notify("AutoDodge", "Legit Block " .. (value and "Enabled" or "Disabled"), true)
+            end
+        }, "LegitBlockAD")
+        UI.Sections.AutoDodge:Toggle({
             Name = "Legit Parry",
             Default = State.AutoDodge.LegitParry.Default,
             Callback = function(value)
                 State.AutoDodge.LegitParry.Value = value
-                if tick() - lastNotificationTime >= notificationDelay then
-                    lastNotificationTime = tick()
-                    notify("AutoDodge", "Legit Parry " .. (value and "Enabled" or "Disabled"), true)
-                end
-            end,
-        }, 'LegitParryAD')
-    end
-
-    local localconfigSection = UI.Tabs.Config:Section({ Name = "KillAura Sync", Side = "Right" })
-    localconfigSection:Header({ Name = "KillAura,AutoDodge Settings Sync" })
-    localconfigSection:Button({
-        Name = "Sync Config",
-        Callback = function()
-            State.KillAura.Range.Value = uiElements.KillAuraRange:GetValue()
-            State.KillAura.AttackCooldown.Value = uiElements.KillAuraAttackCooldown:GetValue()
-            State.KillAura.MinusWindup.Value = uiElements.KillAuraMinusWindup:GetValue()
-            State.KillAura.MinusRelease.Value = uiElements.KillAuraMinusRelease:GetValue()
-            State.KillAura.KickDelay.Value = uiElements.KillAuraKickDelay:GetValue()
-            State.KillAura.KickStateDelay.Value = uiElements.KillAuraKickStateDelay:GetValue()
-            State.AutoDodge.Range.Value = uiElements.AutoDodgeRange:GetValue()
-            State.AutoDodge.PreRange.Value = uiElements.AutoDodgePreRange:GetValue()
-            State.AutoDodge.DodgeCooldown.Value = uiElements.AutoDodgeDodgeCooldown:GetValue()
-            State.AutoDodge.PredictionTime.Value = uiElements.AutoDodgePredictionTime:GetValue()
-            State.AutoDodge.AdaptiveFactor.Value = uiElements.AutoDodgeAdaptiveFactor:GetValue()
-            local blockingModeOptions = uiElements.AutoDodgeBlockingMode:GetOptions()
-            for option, selected in pairs(blockingModeOptions) do
-                if selected then
-                    State.AutoDodge.BlockingMode.Value = option
-                    break
-                end
+                notify("AutoDodge", "Legit Parry " .. (value and "Enabled" or "Disabled"), true)
             end
-            State.AutoDodge.ParryingChance.Value = uiElements.AutoDodgeParryingChance:GetValue()
-            State.AutoDodge.RiposteChance.Value = uiElements.AutoDodgeRiposteChance:GetValue()
-            State.AutoDodge.MissChance.Value = uiElements.AutoDodgeMissChance:GetValue()
+        }, "LegitParryAD")
 
-            Core.BulwarkTarget.isKillAura = State.KillAura.Enabled.Value
-            Core.BulwarkTarget.isAutoDodge = State.AutoDodge.Enabled.Value
+        local configSection = UI.Tabs.Config:Section({ Name = "KillAura Sync", Side = "Right" })
+        configSection:Header({ Name = "KillAura Settings Sync" })
+        configSection:Button({
+            Name = "Sync Config",
+            Callback = function()
+                State.KillAura.Range.Value = uiElements.KillAuraRange:GetValue()
+                State.KillAura.AttackCooldown.Value = uiElements.KillAuraAttackCooldown:GetValue()
+                State.KillAura.MinusWindup.Value = uiElements.ToolExploitMinusWindup:GetValue()
+                State.KillAura.MinusRelease.Value = uiElements.ToolExploitMinusRelease:GetValue()
+                State.KillAura.KickDelay.Value = uiElements.ToolExploitKickDelay:GetValue()
+                State.KillAura.KickStateDelay.Value = uiElements.ToolExploitKickStateDelay:GetValue()
+                State.AutoDodge.Range.Value = uiElements.AutoDodgeRange:GetValue()
+                State.AutoDodge.PreRange.Value = uiElements.AutoDodgePreRange:GetValue()
+                State.AutoDodge.DodgeCooldown.Value = uiElements.AutoDodgeDodgeCooldown:GetValue()
+                State.AutoDodge.PredictionTime.Value = uiElements.AutoDodgePredictionTime:GetValue()
+                State.AutoDodge.AdaptiveFactor.Value = uiElements.AutoDodgeAdaptiveFactor:GetValue()
+                State.AutoDodge.ParryingChance.Value = uiElements.AutoDodgeParryingChance:GetValue()
+                State.AutoDodge.RiposteChance.Value = uiElements.AutoDodgeRiposteChance:GetValue()
+                State.AutoDodge.MissChance.Value = uiElements.AutoDodgeMissChance:GetValue()
 
-            notify("KillAura", "Config synchronized!", true)
-        end
-    })
+                notify("KillAura", "Config synchronized!", true)
+            end
+        }, "KillAuraSync")
+    end
 end
 SetupUI()
 end
 
 return KillAura
-
