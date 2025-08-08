@@ -585,12 +585,15 @@ function BaitAttack.Init(UI, Core, notify)
     end)
 
     wait(0.7)
+
+    local uiElements = {}
+
     if UI.Tabs and UI.Tabs.Combat then
         local section = UI.Sections.BaitAttack or UI.Tabs.Combat:Section({ Name = "Bait Attack", Side = "Left" })
         UI.Sections.BaitAttack = section
         section:Header({ Name = "Bait Attack" })
         section:SubLabel({ Text = "Plays fake Parry/Riposte/Attack animations without server interaction" })
-        section:Toggle({
+        uiElements.BaitAttackEnabled = section:Toggle({
             Name = "Enabled",
             Default = State.BaitAttack.Enabled.Default,
             Callback = function(value)
@@ -603,38 +606,35 @@ function BaitAttack.Init(UI, Core, notify)
                     notify("BaitAttack", "Disabled", true)
                 end
             end,
-            'BaitAttackEnabled'
-        })
+        }, 'BaitAttackEnabled')
         local keybinds = {
             { Name = "Fake Parry Key", State = "FakeParryKey", Id = "FakeParryKeyBA" },
             { Name = "Fake Riposte Key", State = "FakeRiposteKey", Id = "FakeRiposteKeyBA" },
             { Name = "Fake Attack Key", State = "FakeAttackKey", Id = "FakeAttackKeyBA" }
         }
         for _, kb in ipairs(keybinds) do
-            section:Keybind({
+            uiElements[kb.Id] = section:Keybind({
                 Name = kb.Name,
                 Default = State.BaitAttack[kb.State].Default,
                 Callback = function(value)
                     State.BaitAttack[kb.State].Value = value
                     updateKeybindDisplays()
                 end,
-                kb.Id
-            })
+            }, kb.Id)
         end
         section:Divider()
-        section:Toggle({
+        uiElements.CheckStanceBA = section:Toggle({
             Name = "Check Stance",
             Default = State.BaitAttack.CheckStance.Default,
             Callback = function(value)
                 State.BaitAttack.CheckStance.Value = value
                 notify("BaitAttack", "Check Stance: " .. (value and "Enabled" or "Disabled"), true)
             end,
-            'CheckStanceBA'
-        })
+        }, 'CheckStanceBA')
         section:SubLabel({ Text = "Prevents bait animations if player's Stance is not Idle or Recovery" })
         section:Divider()
         section:SubLabel({ Text = "Parry" })
-        section:Toggle({
+        uiElements.ParryHoldBA = section:Toggle({
             Name = "Hold",
             Default = State.BaitAttack.ParryHold.Default,
             Callback = function(value)
@@ -652,9 +652,8 @@ function BaitAttack.Init(UI, Core, notify)
                     Core.BulwarkTarget.CombatState = nil
                 end
             end,
-            'ParryHoldBA'
-        })
-        section:Toggle({
+        }, 'ParryHoldBA')
+        uiElements.AutoHoldEnabledBA = section:Toggle({
             Name = "Auto Hold",
             Default = State.BaitAttack.AutoHoldEnabled.Default,
             Callback = function(value)
@@ -672,9 +671,8 @@ function BaitAttack.Init(UI, Core, notify)
                     Core.BulwarkTarget.CombatState = nil
                 end
             end,
-            'AutoHoldEnabledBA'
-        })
-        section:Slider({
+        }, 'AutoHoldEnabledBA')
+        uiElements.ParryAutoHoldBA = section:Slider({
             Name = "Auto Hold Duration",
             Minimum = 2,
             Maximum = 10,
@@ -684,35 +682,32 @@ function BaitAttack.Init(UI, Core, notify)
                 State.BaitAttack.ParryAutoHold.Value = value
                 notify("BaitAttack", "Parry Auto Hold set to: " .. value .. " seconds", false)
             end,
-            'ParryAutoHoldBA'
-        })
+        }, 'ParryAutoHoldBA')
         section:Divider()
         section:SubLabel({ Text = "Force Stop" })
-        section:Toggle({
+        uiElements.ForceStopEnabledBA = section:Toggle({
             Name = "Enabled",
             Default = State.BaitAttack.ForceStopEnabled.Default,
             Callback = function(value)
                 State.BaitAttack.ForceStopEnabled.Value = value
                 notify("BaitAttack", "Force Stop: " .. (value and "Enabled" or "Disabled"), true)
             end,
-            'ForceStopEnabledBA'
-        })
-        section:Keybind({
+        }, 'ForceStopEnabledBA')
+        uiElements.ForceStopKeyBA = section:Keybind({
             Name = "Force Stop Key",
             Default = State.BaitAttack.ForceStopKey.Default,
             Callback = function(value)
                 State.BaitAttack.ForceStopKey.Value = value
                 updateKeybindDisplays()
             end,
-            'ForceStopKeyBA'
-        })
+        }, 'ForceStopKeyBA')
         section:SubLabel({ Text = "Sets Stance to Idle without stopping animations" })
 
         local keybindSection = UI.Tabs.Visuals:Section({ Name = "BaitAttackKeybinds", Side = "Right" })
         UI.Sections.BaitAttackKeybinds = keybindSection
         keybindSection:Header({ Name = "BaitAttack KeyBind" })
         keybindSection:SubLabel({ Text = "Displays keybinds for BaitAttack actions on screen" })
-        keybindSection:Toggle({
+        uiElements.KeybindDisplayEnabledBA = keybindSection:Toggle({
             Name = "Enabled",
             Default = State.BaitAttack.KeybindDisplayEnabled.Default,
             Callback = function(value)
@@ -720,9 +715,8 @@ function BaitAttack.Init(UI, Core, notify)
                 updateKeybindDisplays()
                 notify("BaitAttack", "Keybind Displays " .. (value and "Enabled" or "Disabled"), true)
             end,
-            'KeybindDisplayEnabledBA'
-        })
-        keybindSection:Slider({
+        }, 'KeybindDisplayEnabledBA')
+        uiElements.KeybindDisplayScaleBA = keybindSection:Slider({
             Name = "Scale",
             Minimum = 0.5,
             Maximum = 2.0,
@@ -733,8 +727,7 @@ function BaitAttack.Init(UI, Core, notify)
                 updateKeybindDisplays()
                 notify("BaitAttack", "Keybind Display Scale set to: " .. value, false)
             end,
-            'KeybindDisplayScaleBA'
-        })
+        }, 'KeybindDisplayScaleBA')
         keybindSection:Divider()
         local displayToggles = {
             { Name = "Parry", State = "ParryDisplayEnabled", Id = "ParryDisplayEnabledBA" },
@@ -743,7 +736,7 @@ function BaitAttack.Init(UI, Core, notify)
             { Name = "ForceStop", State = "ForceStopDisplayEnabled", Id = "ForceStopDisplayEnabledBA" }
         }
         for _, toggle in ipairs(displayToggles) do
-            keybindSection:Toggle({
+            uiElements[toggle.Id] = keybindSection:Toggle({
                 Name = toggle.Name,
                 Default = State.BaitAttack[toggle.State].Default,
                 Callback = function(value)
@@ -751,14 +744,24 @@ function BaitAttack.Init(UI, Core, notify)
                     updateKeybindDisplays()
                     notify("BaitAttack", toggle.Name .. " Keybind Display: " .. (value and "Enabled" or "Disabled"), true)
                 end,
-                toggle.Id
-            })
+            }, toggle.Id)
         end
 
-        updateKeybindDisplays()
+        local configSection = UI.Tabs.Config:Section({ Name = "BaitAttack Sync", Side = "Right" })
+        configSection:Header({ Name = "BaitAttack Settings Sync" })
+        configSection:Button({
+            Name = "Sync Config",
+            Callback = function()
+                State.BaitAttack.ParryAutoHold.Value = uiElements.ParryAutoHoldBA:GetValue()
+                State.BaitAttack.KeybindDisplayScale.Value = uiElements.KeybindDisplayScaleBA:GetValue()
+                State.BaitAttack.FakeParryKey.Value = uiElements.FakeParryKeyBA:GetBind()
+                State.BaitAttack.FakeRiposteKey.Value = uiElements.FakeRiposteKeyBA:GetBind()
+                State.BaitAttack.FakeAttackKey.Value = uiElements.FakeAttackKeyBA:GetBind()
+                State.BaitAttack.ForceStopKey.Value = uiElements.ForceStopKeyBA:GetBind()
+                notify("BaitAttack", "Config synchronized!", true)
+            end,
+        }, 'BaitAttackSync')
     end
-
-    return BaitAttack
 end
 
 return BaitAttack
