@@ -59,7 +59,7 @@ function KillAura.Init(UI, Core, notify)
             Delay = { Value = 0.002, Default = 0.002 },
             Blocking = { Value = true, Default = true },
             BlockingAntiStun = { Value = true, Default = true },
-            RiposteMouseLockDuration = { Value = 1.5, Default = 1.5 },
+            RiposteMouseLockDuration = { Value = 0.8, Default = 0.8 }, -- Сокращено для уменьшения времени WalkSpeed = 1
             MaxWaitTime = { Value = 1, Default = 1 },
             PredictionTime = { Value = 0.04, Default = 0.04 },
             ResolveAngle = { Value = true, Default = true },
@@ -98,9 +98,10 @@ function KillAura.Init(UI, Core, notify)
     local LATENCY_BUFFER = 0.015
     local PREDICTION_THRESHOLD = 0.1
     local MAX_ADDITIONAL_TARGETS = 5
-    local ANGLE_THRESHOLD = 45
+    local ANGLE_THRESHOLD = 30 -- Уменьшено для более точного определения атаки
     local MIN_RELEASE_TIME = 0.025
     local DMGPOINT_SPEED_THRESHOLD = 5
+    local LONG_WEAPON_THRESHOLD = 12 -- Порог дистанции для длинного оружия
 
     local function getPlayerStance(player)
         if not player or not player.Character then
@@ -352,6 +353,9 @@ function KillAura.Init(UI, Core, notify)
             return false
         end
 
+        local distance = getDmgPointDistance(targetPlayer, weapon)
+        local angleThreshold = distance > LONG_WEAPON_THRESHOLD and ANGLE_THRESHOLD * 0.8 or ANGLE_THRESHOLD * 1.2 -- Адаптация порога угла для длинного и короткого оружия
+
         local hitboxes = {
             localCharacter:FindFirstChild("Head"),
             localCharacter:FindFirstChild("Torso"),
@@ -370,7 +374,7 @@ function KillAura.Init(UI, Core, notify)
             end
         end
 
-        return currentAngle > ANGLE_THRESHOLD
+        return currentAngle > angleThreshold
     end
 
     local function checkDamagePointCollision(targetPlayer, weapon)
@@ -432,11 +436,14 @@ function KillAura.Init(UI, Core, notify)
         local velocity = targetRootPart.Velocity
         local predictedPos = dmgPoint.WorldPosition + velocity * settings.Release
         local predictedDistance = (localRootPart.Position - predictedPos).Magnitude
-        local timeToHit = predictedDistance / (settings.Release * State.AutoDodge.AdaptiveFactor.Value)
+        local weaponSpeedFactor = settings.Release > 0.5 and 0.8 or 1.2 -- Адаптация для медленного/быстрого оружия
+        local timeToHit = predictedDistance / (settings.Release * State.AutoDodge.AdaptiveFactor.Value * weaponSpeedFactor)
 
         local isDragAttack, _ = analyzeDmgPointTrajectory(targetPlayer, weapon)
         if isDragAttack then
-            timeToHit = timeToHit * 0.8
+            timeToHit = timeToHit * 0.7 -- Уменьшаем время для драг-атак
+        elseif distance > LONG_WEAPON_THRESHOLD then
+            timeToHit = timeToHit * 1.1 -- Увеличиваем время для длинного оружия
         end
 
         return predictedDistance <= State.AutoDodge.Range.Value, math.max(MIN_RELEASE_TIME, timeToHit - LATENCY_BUFFER)
@@ -549,11 +556,11 @@ function KillAura.Init(UI, Core, notify)
                 animationTrack:AdjustSpeed(0)
                 localHumanoid.WalkSpeed = 1
                 isRiposteActive = true
-                riposteEndTime = tick() + (State.AutoDodge.RiposteMouseLockDuration.Value / 3) -- Делим на 3 для WalkSpeed = 1
+                riposteEndTime = tick() + State.AutoDodge.RiposteMouseLockDuration.Value
                 task.spawn(function()
-                    task.wait(0.25)
+                    task.wait(0.15) -- Сокращено время ожидания для Riposte
                     if animationTrack and animationTrack.IsPlaying and animationTrack.TimePosition == 0 then
-                        animationTrack:Stop(0.4)
+                        animationTrack:Stop(0.3)
                     end
                 end)
             end
@@ -593,21 +600,21 @@ function KillAura.Init(UI, Core, notify)
         end
         if action == "Riposte" then
             ChangeStance:FireServer("RiposteDelay")
-            task.wait(0.4)
+            task.wait(0.3) -- Сокращено для более быстрого выхода
         else
             ChangeStance:FireServer("UnParry")
             task.wait(0.004)
         end
 
         if animationTrack then
-            animationTrack:Stop(action == "Parrying" and 0.08 or 0.4)
+            animationTrack:Stop(action == "Parrying" and 0.08 or 0.3)
             animationTrack:Destroy()
         end
         localHumanoid.WalkSpeed = 9
 
         ChangeStance:FireServer("Idle")
         if action == "Riposte" then
-            task.wait(State.AutoDodge.RiposteMouseLockDuration.Value / 3) -- Делим на 3 для WalkSpeed = 1
+            task.wait(State.AutoDodge.RiposteMouseLockDuration.Value)
             isRiposteActive = false
         end
         lastDodgeTime = tick()
@@ -1608,7 +1615,3 @@ function KillAura.Init(UI, Core, notify)
 end
 
 return KillAura
-
-
-
-
